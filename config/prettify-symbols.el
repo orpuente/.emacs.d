@@ -1,0 +1,45 @@
+(defun prog-mode-pretty-symbols ()
+  "This function enables pretty symbols for all
+programming modes. It is to be added to the `'prog-mode-hook'."
+  (setq prettify-symbols-alist
+	'(("lambda" . ?λ)
+	  ("fn"     . ?󰊕)
+	  ("struct" . ?)
+	  ("enum"   . ?)
+	  ("self"   . ?○)
+	  ("Self"   . ?○)
+	  ("!="     . ?≠)
+	  ("<="     . ?≤)
+	  (">="     . ?≥)
+	  ("for"    . ?∀)
+	  ("..."    . ?…)))
+  (prettify-symbols-mode 1))
+
+(defun shared-lisp-pretty-symbols ()
+  "This function enables pretty symbols for all
+lisp modes. It is to be added to the lisp mode hooks."
+  (setq prettify-symbols-alist
+	'(("lambda"       . ?λ)
+	  ("defun"        . ?󰊕)
+	  ("defmethod"    . ?)
+	  ("defstruct"    . ?)
+	  ("defmacro"     . ?󰡷)
+	  ("defparameter" . ?)
+	  ("defvar"       . ?󰕷)
+	  ("cond"         . ?󰘬)
+	  ("self"         . ?○)
+	  ("!="           . ?≠)
+	  ("<="           . ?≤)
+	  (">="           . ?≥)
+	  ("for"          . ?∀)
+	  ("..."          . ?…)
+	  ("list"         . ?ℒ)
+	  ("nil"          . ?∅)
+	  ("union"        . ?∪)
+	  ("sqrt"         . ?√)))
+  (prettify-symbols-mode 1))
+
+(add-hook 'prog-mode-hook #'prog-mode-pretty-symbols)
+(add-hook 'emacs-lisp-mode-hook #'shared-lisp-pretty-symbols)
+(add-hook 'lisp-mode-hook #'shared-lisp-pretty-symbols)
+(add-hook 'lisp-interaction-mode-hook #'shared-lisp-pretty-symbols)

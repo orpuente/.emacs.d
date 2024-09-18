@@ -1,0 +1,16 @@
+# non-config-folders
+auto-save-list/
+eln-cache/
+elpa/
+org-persist/
+url/
+
+# undo-tree caches
+*~undo-tree~
+
+# elisp compilations
+*.el~
+
+# ido index
+ido.last
+ido.last~
