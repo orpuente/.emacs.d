@@ -70,6 +70,10 @@
 ;;(define-key lisp-mode-shared-map (kbd ";") (lambda () (interactive) (insert ":")))
 ;; --
 
+;;; Lisp key-shortcuts
+(define-key lisp-mode-shared-map (kbd "M-SPC") (lambda () (interactive) (insert "-")))
+(define-key lisp-mode-shared-map (kbd "C-r") #'raise-sexp)
+(define-key lisp-mode-shared-map (kbd "C-x C-p") #'sly-eval-last-sexp-in-popup-buffer)
 
 ;; Quick Help
 (global-set-key (kbd "M-h") (kbd "C-h o <return>"))

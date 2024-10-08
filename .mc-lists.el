@@ -9,6 +9,7 @@
 	org-shiftcontrolright
 	org-shiftright
 	sp-backward-delete-char
+	sp-delete-char
 	))
 
 (setq mc/cmds-to-run-once
