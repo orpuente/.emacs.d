@@ -1,23 +1,34 @@
-(require 'cl-lib)
-(require 'display-line-numbers)
-(require 'ef-themes)
-(require 'multiple-cursors)
-(require 'org-tempo)
-(require 'package)
-(require 'rainbow-delimiters)
-(require 'smartparens-config)
-(require 'undo-tree)
-(when (display-graphic-p)
-  (require 'all-the-icons))
-(require 'doom-themes)
-(require 'doom-modeline)
+;; If setting up the config from scratch remember to.
+;; 1. (package-refresh-contents)
+;; 2. (package-upgrade-all)
+
+;; Since we are using `use-package' we don't want to 'require` all packages.
+;; So, we DO NOT call `package-initialize'. We also don't use `require'.
+
+;; These packages are not added to 'load-path` for some reason, so we add them manually.
+(add-to-list 'load-path "/home/orpuente/.emacs.d/elpa/queue-0.2/")
+(add-to-list 'load-path "/home/orpuente/.emacs.d/elpa/smartparens-20250612.1050/")
+(add-to-list 'load-path "/home/orpuente/.emacs.d/elpa/undo-tree-0.8.2/")
+
+;; Alwas set (:defer t) when using `use-package'.
+(setq use-package-always-defer t)
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
 ;; and `package-pinned-packages`. Most users will not need or want to do this.
 ;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(package-initialize)
-(package-refresh-contents)
+
+;; We pass the &optional async-download argument to not block emacs.
+;; Additionally, we run this function after emacs has initialized.
+;; Before doing these two things this was by far the slowest initialization step.
+(add-hook 'emacs-startup-hook (lambda () (package-refresh-contents t)))
+
+;; Some global packages.
+(use-package cl-lib :demand t)
+(use-package all-the-icons
+  :if (display-graphic-p)
+  :ensure t
+  :demand t)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -26,21 +37,17 @@
  ;; If there is more than one, they won't work right.
  '(org-support-shift-select t)
  '(package-selected-packages
-   '(yasnippet lsp-ui lsp-mode rust-mode ob-rust doom-modeline org-superstar all-the-icons neotree doom-themes minimap multiple-cursors company sly-quicklisp zoom ef-themes rainbow-delimiters undo-tree sly smartparens)))
+   '(all-the-icons company doom-modeline doom-themes ef-themes
+		   multiple-cursors rainbow-delimiters smartparens
+		   undo-tree)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(rainbow-delimiters-depth-1-face ((t (:foreground "dark orange"))))
- '(rainbow-delimiters-depth-2-face ((t (:foreground "deep pink"))))
- '(rainbow-delimiters-depth-3-face ((t (:foreground "chartreuse"))))
- '(rainbow-delimiters-depth-4-face ((t (:foreground "deep sky blue"))))
- '(rainbow-delimiters-depth-5-face ((t (:foreground "yellow"))))
- '(rainbow-delimiters-depth-6-face ((t (:foreground "orchid"))))
- '(rainbow-delimiters-depth-7-face ((t (:foreground "spring green"))))
- '(rainbow-delimiters-depth-8-face ((t (:foreground "sienna1")))))
+)
+
 
 (defun load-directory (directory)
   "Load recursively all `.el' files in DIRECTORY."
@@ -63,3 +70,5 @@
 
 (put 'narrow-to-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
+
+(message "Init time: %s" (emacs-init-time))

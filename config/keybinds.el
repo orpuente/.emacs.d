@@ -3,12 +3,9 @@
 (keyboard-translate ?\C-\[ ?\s-\[) ; C-[ = M-w 
 
 ;; Unbinds
-(define-key undo-tree-map (kbd "C-/") nil)
-(define-key undo-tree-map (kbd "C-_") nil)
-(keymap-unset undo-tree-map "C-/")
+
 (keymap-unset lisp-interaction-mode-map "C-M-i")
 (keymap-unset emacs-lisp-mode-map "C-M-i")
-(keymap-unset mc/keymap "C-v")
 
 (global-set-key (kbd "M-w") #'kill-ring-save)
 (global-set-key (kbd "C-d") #'delete-char)
@@ -21,8 +18,6 @@
 (global-set-key (kbd "C-0") #'other-window)
 
 ;; basic text manipulation
-(global-set-key (kbd "C-z") #'undo-tree-undo)
-(global-set-key (kbd "C-y") #'undo-tree-redo)
 (global-set-key (kbd "C-v") #'yank)
 (global-set-key (kbd "C-a") #'mark-whole-buffer)
 (global-set-key (kbd "M-k") #'next-line)

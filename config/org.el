@@ -1,10 +1,17 @@
-;; Org-babel languages.
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((C . t)
-   (python . t)
-   (lisp . t)
-   (rust . t)))
+(use-package org
+  :hook org-mode
+  :config (progn
+	    (org-babel-do-load-languages
+	     'org-babel-load-languages
+	     '((C . t)
+	       (python . t)
+	       (lisp . t)
+	       (rust . t)))))
+
+(use-package doom-themes
+  :ensure t
+  :hook org-mode
+  :config (doom-themes-org-config))
 
 ;; Skip confirmation when evaluating org-babel code blocks.
 (defun my-org-confirm-babel-evaluate (lang body) nil)
@@ -15,9 +22,6 @@
 
 ;; Hide leading stars on headers.
 (setq org-hide-leading-stars t)
-
-;; Doom-org.
-(doom-themes-org-config)
 
 ;; Add minor modes.
 (add-to-hook 'org-mode-hook
