@@ -27,43 +27,26 @@
   (sp-transpose-sexp -1))
 
 (defun orpl-lisp-editing-keybinds (keymap)
-  ;;; jlik
-  ;; Ctrl
-  (define-key keymap (kbd "M-j") #'backward-char)
-  (define-key keymap (kbd "M-l") #'forward-char)
-  (define-key keymap (kbd "M-i") #'previous-line)
-  (define-key keymap (kbd "M-k") #'next-line)
-
-  ;; Super (WindowsKey)
-  (define-key keymap (kbd "s-j") #'sp-backward-up-sexp)
-  (define-key keymap (kbd "s-l") #'sp-up-sexp)
-  (define-key keymap (kbd "s-i") #'sp-backward-down-sexp)
-  (define-key keymap (kbd "s-k") #'sp-down-sexp)
-
-  ;; Meta (AltKey)
-  (define-key keymap (kbd "C-j") #'backward-sexp)
-  (define-key keymap (kbd "C-l") #'forward-sexp)
-  (define-key keymap (kbd "H-i") #'backward-sexp) 
-  (define-key keymap (kbd "C-k") #'forward-sexp)
-
   ;; C-M-[key] (Ctrl + Alt + [key])
-  ;; (define-key keymap (kbd "M-SPC-j") nil)
-  ;; (define-key keymap (kbd "M-SPC-l") nil)
-  (define-key keymap (kbd "M-SPC M-k") #'sp-transpose-sexp)
-  (define-key keymap (kbd "M-SPC M-i") #'orpl-backward-transpose-sexp)
+  (define-key keymap (kbd "M-<left>") #'orpl-backward-transpose-sexp)
+  (define-key keymap (kbd "M-<right>") #'sp-transpose-sexp)
+  (define-key keymap (kbd "M-<up>") #'orpl-backward-transpose-sexp)
+  (define-key keymap (kbd "M-<down>") #'sp-transpose-sexp)
 
-  ;; Arrows
+  ;; C-[Arrows]
   (define-key keymap (kbd "C-<left>")  #'backward-sexp)
   (define-key keymap (kbd "C-<right>") #'forward-sexp)
   (define-key keymap (kbd "C-<up>")    #'backward-sexp)
   (define-key keymap (kbd "C-<down>")  #'forward-sexp)
-
+  
   ;;; ast-actions
   (define-key keymap (kbd "H-[") #'sp-backward-slurp-sexp)
   (define-key keymap (kbd "C-]") #'sp-backward-barf-sexp)
   (define-key keymap (kbd "M-[") #'sp-forward-barf-sexp)
   (define-key keymap (kbd "M-]") #'sp-forward-slurp-sexp)
-  (define-key keymap (kbd "C-r") #'raise-sexp))
+  (define-key keymap (kbd "C-r") #'raise-sexp)
+  (define-key keymap (kbd "C-(") #'sp-backward-unwrap-sexp)
+  (define-key keymap (kbd "C-)") #'sp-unwrap-sexp))
 
 ;; Quick Help
 (global-set-key (kbd "M-h") (kbd "C-h o <return>"))

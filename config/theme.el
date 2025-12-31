@@ -5,17 +5,19 @@
   :config (progn (setq ef-themes-disable-other-themes t)
 		 (load-theme 'ef-bio :no-confirm)
 		 ;; (load-theme 'ef-autumn :no-confirm)
-		 ;; (load-theme 'ef-elea-light :heno-confirm)
+		 ;; (load-theme 'ef-elea-light :no-confirm)
 		 ;; Toggle between themes
 		 (setq ef-themes-to-toggle (list 'ef-bio 'ef-elea-light))
-		 (global-set-key (kbd "C-n") #'ef-themes-toggle)))
+		 (global-set-key (kbd "C-n") #'ef-themes-toggle)
+		 (global-set-key (kbd "C-S-n") #'ef-themes-rotate)))
 
 ;; Sebas' red theme.
 ; (set-face-attribute 'default nil :foreground "#ff6666" :background "#000")
 
 ;; doom-emacs
 (use-package doom-themes
-  :defer 5
+  :disabled t
+  :defer t
   :config (progn (doom-themes-neotree-config)
 		 ;; (load-theme 'doom-one t)
 		 (global-set-key (kbd "C-b") #'neotree-toggle)))

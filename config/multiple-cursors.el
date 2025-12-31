@@ -1,11 +1,12 @@
 (use-package multiple-cursors
   :ensure t
-  :hook prog-mode
+  :demand t
   :config (progn
 	    (keymap-unset mc/keymap "C-v")
-	    (define-key mc/keymap (kbd "<return>") nil)
+	    (keymap-unset mc/keymap "<return>")
 	    (global-set-key (kbd "C-M-<up>") #'mc/mark-previous-like-this)
 	    (global-set-key (kbd "C-M-<down>") #'mc/mark-next-like-this)
 	    (global-set-key (kbd "C-M-i") #'mc/mark-previous-like-this)
 	    (global-set-key (kbd "C-M-k") #'mc/mark-next-like-this)))
+
 
