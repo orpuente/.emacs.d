@@ -1,12 +1,10 @@
 ;;;; Set some basic config vars.
 
 ;; Change font
-;;(set-frame-font "Hack Nerd Font 9")
-(set-frame-font "FiraCode Nerd Font 9")
-;;(set-fontset-font)
+(set-frame-font "FiraCode Nerd Font 12")
 
 ;; Fonts for emacsclient.
-(add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font 9"))
+(add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font 12"))
 
 ;; Disable ring-bell.
 (setq ring-bell-function #'ignore)
