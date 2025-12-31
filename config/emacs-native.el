@@ -5,6 +5,9 @@
 (set-frame-font "FiraCode Nerd Font 9")
 ;;(set-fontset-font)
 
+;; Fonts for emacsclient.
+(add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font 9"))
+
 ;; Disable ring-bell.
 (setq ring-bell-function #'ignore)
 
@@ -26,7 +29,7 @@
 (delete-selection-mode 1)
 
 ;; Set common-lisp backend to SBCL
-(setq inferior-lisp-program "sbcl")
+(setq inferior-lisp-program "sbcl --dynamic-space-size 4096")
 
 ;; Actually close help buffers (and others) when you press 'q'.
 (defadvice quit-window (before quit-window-always-kill)

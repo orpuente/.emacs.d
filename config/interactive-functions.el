@@ -19,3 +19,9 @@
 		  (insert "=> " values))
 		(read-only-mode 1)))))
       (user-error "No sexp at point!"))))
+
+(defun modes-in-buffer (mode)
+  (interactive (list major-mode))
+  (defun iter (mode)
+    (and mode (cons mode (iter (get mode 'derived-mode-parent)))))
+  (message "%s" (iter mode)))

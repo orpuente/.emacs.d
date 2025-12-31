@@ -30,40 +30,44 @@
   :ensure t
   :demand t)
 
+;; Some packages we want to make sure are installed.
+(use-package sly :ensure t)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(org-support-shift-select t)
- '(package-selected-packages
-   '(all-the-icons company doom-modeline doom-themes ef-themes
-		   multiple-cursors rainbow-delimiters smartparens
-		   undo-tree)))
+ '(package-selected-packages nil))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-)
-
+ )
 
 (defun load-directory (directory)
-  "Load recursively all `.el' files in DIRECTORY."
-  (dolist (element (directory-files-and-attributes directory nil nil nil))
-    (let* ((path (car element))
-           (fullpath (concat directory "/" path))
-           (isdir (car (cdr element)))
-           (ignore-dir (or (string= path ".") (string= path ".."))))
-      (cond
-       ((and (eq isdir t) (not ignore-dir))
-        (load-directory fullpath))
-       ((and
-	 (eq isdir nil)
-	 (string= (substring path -3) ".el")
-	 (not (string= (substring path 0 2) ".#")))
-        (load (file-name-sans-extension fullpath)))))))
+  "Load recursively all `.el' files in DIRECTORY.
+ The recursion loads the files before the subdirectories to allow
+ subdirectories to depend on definitions made on their parents."
+  (let ((subdirectories ()))
+    (dolist (element (directory-files-and-attributes directory nil nil nil))
+      (let* ((path (car element))
+	     (fullpath (concat directory "/" path))
+	     (isdir (car (cdr element)))
+	     (ignore-dir (or (string= path ".") (string= path ".."))))
+	(cond
+	 ((and (eq isdir t) (not ignore-dir))
+	  (push fullpath subdirectories))
+	 ((and
+	   (eq isdir nil)
+	   (string= (substring path -3) ".el")
+	   (not (string= (substring path 0 2) ".#")))
+	  (load (file-name-sans-extension fullpath))))))
+    (dolist (subdir subdirectories)
+      (load-directory subdir))))
 
 (load-directory "~/.emacs.d/config-utils")
 (load-directory "~/.emacs.d/config")

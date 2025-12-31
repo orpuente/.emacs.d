@@ -1,7 +1,7 @@
 ;; Autocompletion while editing code
 (use-package company
   :ensure t
-  :hook prog-mode
+  :hook (prog-mode sly-mrepl-mode)
   :config (progn
 	    (define-key company-mode-map   (kbd "C-SPC") #'company-complete)
 	    (define-key company-active-map (kbd "M-i") #'company-select-previous)

@@ -11,6 +11,13 @@ url/
 # elisp compilations
 *.el~
 
+# ?
+*.el#
+.#*
+
 # ido index
 ido.last
 ido.last~
+
+# tramp connection history
+tramp

@@ -3,16 +3,9 @@
 
 (setq mc/cmds-to-run-for-all
       '(
-	backward-sexp
-	eval-defun
-	forward-sexp
-	org-shiftcontrolright
-	org-shiftright
-	sp-backward-delete-char
-	sp-delete-char
+	lisp-mode
 	))
 
 (setq mc/cmds-to-run-once
       '(
-	kill-region
 	))

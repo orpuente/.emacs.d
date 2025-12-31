@@ -1,77 +1,73 @@
-;;                                   Reason:
-(keyboard-translate ?\C-i ?\s-i)   ; C-i = TAB
-(keyboard-translate ?\C-\[ ?\s-\[) ; C-[ = M-w 
+(defun orpl-translate-keys (&optional frame) ; Reason:
+  (keyboard-translate ?\C-i ?\s-i)       ; C-i = TAB
+  (keyboard-translate ?\C-\[ ?\s-\[))    ; C-[ = M-w 
+(add-hook 'after-make-frame-functions #'orpl-translate-keys)
+(orpl-translate-keys)
 
 ;; Unbinds
-
 (keymap-unset lisp-interaction-mode-map "C-M-i")
 (keymap-unset emacs-lisp-mode-map "C-M-i")
-
-(global-set-key (kbd "M-w") #'kill-ring-save)
-(global-set-key (kbd "C-d") #'delete-char)
-
-(dolist (key '("C-a" "C-k" "C-l" "C-n" "C-o" "C-p"
-	       "C-t" "C-]" "s-[" "M-e"))
-  (global-unset-key (kbd key)))
+(dolist (key '("C-a" "C-n" "C-o" "C-p"
+	       "C-t" "C-]" "H-[" "M-e"
+	       "C-k" "C-l" "H-i" "C-j"
+	       "s-j" "s-l" "s-i" "s-k" "s-["))
+  (keymap-global-unset key t)
+  (keymap-unset lisp-interaction-mode-map key t))
 
 ;; window movement
 (global-set-key (kbd "C-0") #'other-window)
+(global-set-key (kbd "C-<tab>") #'other-window)
 
 ;; basic text manipulation
 (global-set-key (kbd "C-v") #'yank)
 (global-set-key (kbd "C-a") #'mark-whole-buffer)
-(global-set-key (kbd "M-k") #'next-line)
-(global-set-key (kbd "M-i") #'previous-line)
 
-;;; ast-movement in lisp modes
-;; p: previous
-;; (define-key lisp-mode-shared-map (kbd "H-i") #')
-;; (define-key lisp-mode-shared-map (kbd "M-i") #'sp-transpose-sexp) ; doesn't exist
+(defun orpl-backward-transpose-sexp ()
+  (interactive)
+  (sp-transpose-sexp -1))
 
-;; n: next
-;; (define-key lisp-mode-shared-map (kbd "H-k") #')
-;; (define-key lisp-mode-shared-map (kbd "M-k") #'sp-transpose-sexp)
+(defun orpl-lisp-editing-keybinds (keymap)
+  ;;; jlik
+  ;; Ctrl
+  (define-key keymap (kbd "M-j") #'backward-char)
+  (define-key keymap (kbd "M-l") #'forward-char)
+  (define-key keymap (kbd "M-i") #'previous-line)
+  (define-key keymap (kbd "M-k") #'next-line)
 
-;; b: backwards
-(define-key lisp-mode-shared-map (kbd "M-j") #'backward-char)
-(define-key lisp-mode-shared-map (kbd "M-b") #'backward-char)
-;; (define-key lisp-mode-shared-map (kbd "H-j") )
-(define-key lisp-mode-shared-map (kbd "C-j") #'backward-sexp)
+  ;; Super (WindowsKey)
+  (define-key keymap (kbd "s-j") #'sp-backward-up-sexp)
+  (define-key keymap (kbd "s-l") #'sp-up-sexp)
+  (define-key keymap (kbd "s-i") #'sp-backward-down-sexp)
+  (define-key keymap (kbd "s-k") #'sp-down-sexp)
 
-;; f: forward
-(define-key lisp-mode-shared-map (kbd "M-l") #'forward-char)
-(define-key lisp-mode-shared-map (kbd "M-f") #'forward-char)
-;; (define-key lisp-mode-shared-map (kbd "H-l") #')
-(define-key lisp-mode-shared-map (kbd "C-l") #'forward-sexp)
-(define-key lisp-mode-shared-map (kbd "C-f") #'forward-sexp)
+  ;; Meta (AltKey)
+  (define-key keymap (kbd "C-j") #'backward-sexp)
+  (define-key keymap (kbd "C-l") #'forward-sexp)
+  (define-key keymap (kbd "H-i") #'backward-sexp) 
+  (define-key keymap (kbd "C-k") #'forward-sexp)
 
-;; Arrows
-(define-key lisp-mode-shared-map (kbd "C-<left>")  #'backward-sexp)
-(define-key lisp-mode-shared-map (kbd "C-<right>") #'forward-sexp)
-(define-key lisp-mode-shared-map (kbd "C-<up>")    #'sp-backward-up-sexp)
-(define-key lisp-mode-shared-map (kbd "C-<down>")  #'sp-backward-down-sexp)
-(define-key lisp-mode-shared-map (kbd "M-<up>")    #'sp-up-sexp)
-(define-key lisp-mode-shared-map (kbd "M-<down>")  #'sp-down-sexp)
+  ;; C-M-[key] (Ctrl + Alt + [key])
+  ;; (define-key keymap (kbd "M-SPC-j") nil)
+  ;; (define-key keymap (kbd "M-SPC-l") nil)
+  (define-key keymap (kbd "M-SPC M-k") #'sp-transpose-sexp)
+  (define-key keymap (kbd "M-SPC M-i") #'orpl-backward-transpose-sexp)
 
-;;; ast-actions
-(define-key emacs-lisp-mode-map (kbd "C-c C-c") #'eval-defun)
-(define-key lisp-mode-shared-map (kbd "s-[") #'sp-backward-slurp-sexp)
-(define-key lisp-mode-shared-map (kbd "C-]") #'sp-backward-barf-sexp)
-(define-key lisp-mode-shared-map (kbd "M-[") #'sp-forward-barf-sexp)
-(define-key lisp-mode-shared-map (kbd "M-]") #'sp-forward-slurp-sexp)
+  ;; Arrows
+  (define-key keymap (kbd "C-<left>")  #'backward-sexp)
+  (define-key keymap (kbd "C-<right>") #'forward-sexp)
+  (define-key keymap (kbd "C-<up>")    #'backward-sexp)
+  (define-key keymap (kbd "C-<down>")  #'forward-sexp)
 
-;;; Lisp key-swaps
-;;(define-key lisp-mode-shared-map (kbd ":") (lambda () (interactive) (insert ";")))
-;;(define-key lisp-mode-shared-map (kbd ";") (lambda () (interactive) (insert ":")))
-;; --
-
-;;; Lisp key-shortcuts
-(define-key lisp-mode-shared-map (kbd "M-SPC") (lambda () (interactive) (insert "-")))
-(define-key lisp-mode-shared-map (kbd "C-r") #'raise-sexp)
-(define-key lisp-mode-shared-map (kbd "C-x C-p") #'sly-eval-last-sexp-in-popup-buffer)
+  ;;; ast-actions
+  (define-key keymap (kbd "H-[") #'sp-backward-slurp-sexp)
+  (define-key keymap (kbd "C-]") #'sp-backward-barf-sexp)
+  (define-key keymap (kbd "M-[") #'sp-forward-barf-sexp)
+  (define-key keymap (kbd "M-]") #'sp-forward-slurp-sexp)
+  (define-key keymap (kbd "C-r") #'raise-sexp))
 
 ;; Quick Help
 (global-set-key (kbd "M-h") (kbd "C-h o <return>"))
 
 ;; Just in case
 (global-set-key (kbd "M-x") #'execute-extended-command)
+(global-set-key (kbd "M-w") #'kill-ring-save)
