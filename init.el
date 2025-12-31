@@ -5,6 +5,12 @@
 ;; Since we are using `use-package' we don't want to 'require` all packages.
 ;; So, we DO NOT call `package-initialize'. We also don't use `require'.
 
+;; Uncomment to profile `init.el'.
+;; (setq use-package-compute-statistics t)
+
+;; Uncomment to debug use-package loads.
+;; (setq use-package-verbose t)
+
 ;; Alwas set (:defer t) when using `use-package'.
 (setq use-package-always-defer t)
 
