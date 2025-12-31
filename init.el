@@ -5,11 +5,6 @@
 ;; Since we are using `use-package' we don't want to 'require` all packages.
 ;; So, we DO NOT call `package-initialize'. We also don't use `require'.
 
-;; These packages are not added to 'load-path` for some reason, so we add them manually.
-(add-to-list 'load-path "/home/orpuente/.emacs.d/elpa/queue-0.2/")
-(add-to-list 'load-path "/home/orpuente/.emacs.d/elpa/smartparens-20250612.1050/")
-(add-to-list 'load-path "/home/orpuente/.emacs.d/elpa/undo-tree-0.8.2/")
-
 ;; Alwas set (:defer t) when using `use-package'.
 (setq use-package-always-defer t)
 
@@ -39,7 +34,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(org-support-shift-select t)
- '(package-selected-packages nil))
+ '(package-selected-packages
+   '(all-the-icons company doom-modeline doom-themes ef-themes
+		   multiple-cursors queue rainbow-delimiters sly
+		   smartparens undo-tree)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
