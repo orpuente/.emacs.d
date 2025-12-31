@@ -15,6 +15,9 @@ url/
 *.el#
 .#*
 
+# hidden files
+.*
+
 # ido index
 ido.last
 ido.last~
