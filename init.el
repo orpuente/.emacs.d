@@ -43,7 +43,8 @@
  '(package-selected-packages
    '(all-the-icons company doom-modeline doom-themes ef-themes
 		   multiple-cursors queue rainbow-delimiters sly
-		   smartparens undo-tree)))
+		   smartparens undo-tree))
+ '(sly-lisp-lambda-list-keyword-alignment t))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -75,6 +76,7 @@
 
 (load-directory "~/.emacs.d/config-utils")
 (load-directory "~/.emacs.d/config")
+(load "~/.emacs.d/minor-modes/7-billion-humans.el")
 
 (put 'narrow-to-region 'disabled nil)
 (put 'downcase-region 'disabled nil)

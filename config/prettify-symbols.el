@@ -36,36 +36,12 @@ lisp modes. It is to be added to the lisp mode hooks."
 	  ("list"         . ?ℒ)
 	  ("nil"          . ?∅)
 	  ("union"        . ?∪)
-	  ("sqrt"         . ?√)
-	  ;; 7-billion-human-symbols
-	  ("jump-label"   . ?󰌖)
-	  ("'worker"      . ?)
-	  ("'datacube"    . ?)
-	  ("'nothing"     . ?󰝣)
-	  ("'hole"        . ?)
-	  ("'wall"        . ?󰟾)
-	  ("'printer"     . ?󱞆)
-	  ("'shredder"    . ?)
-	  ("'c"           . ?)
-	  ("'n"           . ?)
-	  ("'ne"          . ?)
-	  ("'e"           . ?)
-	  ("'se"          . ?)
-	  ("'s"           . ?)
-	  ("'sw"          . ?)
-	  ("'w"           . ?)
-	  ("'nw"          . ?)))
+	  ("sqrt"         . ?√)))
   (prettify-symbols-mode 1))
-
-;; Add highlighting for custom keywords and operators in 7-billion-humans, the videogame.
-(defvar-local *7-billion-humans-operators* (rx "(" symbol-start (group  (| "==" "!=" "<" "<=" ">" ">=" "&&" "||")) symbol-end))
-(defvar-local *7-billion-humans-keywords* (rx "(" symbol-start (group (| "ins-list" "jump" "jump-label" "jump-loop" "while" "while-else" "do-while" "repeat" "if*" "branch" "step" "pickup" "giveto" "drop" "set!")) symbol-end))
-(font-lock-add-keywords 'lisp-mode
-			`((,*7-billion-humans-operators* 1 'font-lock-type-face)
-			  (,*7-billion-humans-keywords*  1 'font-lock-keyword-face)))
 
 ;; Pretty symbols hooks.
 (add-hook 'prog-mode-hook #'prog-mode-pretty-symbols)
 (add-hook 'emacs-lisp-mode-hook #'shared-lisp-pretty-symbols)
 (add-hook 'lisp-mode-hook #'shared-lisp-pretty-symbols)
 (add-hook 'lisp-interaction-mode-hook #'shared-lisp-pretty-symbols)
+
