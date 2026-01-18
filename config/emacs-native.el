@@ -27,6 +27,8 @@
 (delete-selection-mode 1)
 
 ;; Set common-lisp backend to SBCL
+;; To start sly faster, we can point sbcl to a custom core with Slynk dependencies preloaded.
+;; Reference: https://joaotavora.github.io/sly/#Loading-Slynk-faster
 (setq inferior-lisp-program "sbcl --dynamic-space-size 4096")
 
 ;; Actually close help buffers (and others) when you press 'q'.
