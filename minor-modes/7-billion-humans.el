@@ -37,7 +37,14 @@
 		    'all-the-icons-purple-alt)
 
        ;; meta
-       (clr-keyword 1 "(" ("compile-program" "def" "map-procedure") 'font-lock-builtin-face))))
+       (clr-keyword 1 "(" ("compile-program" "def" "map-procedure") 'font-lock-builtin-face)
+       )))
+
+
+(defvar-local *7-billion-humans--level-comments*
+    `((,(rx line-start ";;" (+ space) (group "Level" space (+ digit) ":")) 1 'hi-blue t)
+      (,(rx line-start ";;" (+ space) (group (| "Size" "Speed")) line-end) 1 'hi-blue t)))
+
 
 (defvar-local *7-billion-humans--pretty-symbols*
     '(;; control-flow
@@ -72,10 +79,12 @@
   ;; Ensure `display` is managed by font-lock
   (add-to-list 'font-lock-extra-managed-props 'display)
   (font-lock-add-keywords nil *7-billion-humans--keywords*)
+  (font-lock-add-keywords nil *7-billion-humans--level-comments*)
   (font-lock-flush))
 
 (defun 7-billion-humans-mode--remove-keywords ()
   (font-lock-remove-keywords nil *7-billion-humans--keywords*)
+  (font-lock-remove-keywords nil *7-billion-humans--level-comments*)
   ;; Remove display properties left behind
   (remove-text-properties (point-min) (point-max) '(display nil))
   (font-lock-flush))
