@@ -42,8 +42,9 @@
  '(org-support-shift-select t)
  '(package-selected-packages
    '(all-the-icons company doom-modeline doom-themes ef-themes
-		   multiple-cursors queue rainbow-delimiters sly
-		   smartparens undo-tree))
+		   multiple-cursors org-modern queue
+		   rainbow-delimiters sly smartparens ultra-scroll
+		   undo-tree))
  '(sly-lisp-lambda-list-keyword-alignment t))
 
 (custom-set-faces

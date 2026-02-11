@@ -40,7 +40,13 @@
 ;; Move cursor to recently open help window
 (setq help-window-select t)
 
+;; Hide cursor in non-selected window
+(setq-default cursor-in-non-selected-windows nil)
+
 ;; Hide title bar
 ;; (setq default-frame-alist '((undecorated . t)))
 ;; (add-to-list 'default-frame-alist '(drag-internal-border . 1))
 ;; (add-to-list 'default-frame-alist '(internal-border-width . 5))
+
+;; Allow scrolling during isearch
+(setq isearch-allow-scroll 'unlimited)
