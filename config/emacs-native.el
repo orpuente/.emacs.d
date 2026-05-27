@@ -50,3 +50,9 @@
 
 ;; Allow scrolling during isearch
 (setq isearch-allow-scroll 'unlimited)
+
+;; Set tab width to 4 (default is 8)
+(setq-default tab-width 4
+			  indent-tabs-mode t)
+
+(setq backward-delete-char-untabify-method nil)
