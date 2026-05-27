@@ -5,7 +5,7 @@
 	     '((C . t)
 	       (python . t)
 	       (lisp . t)
-	       (rust . t)
+	       ;;(rust . t)
 	       ))))
 
 (use-package org-modern

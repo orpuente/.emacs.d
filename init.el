@@ -41,10 +41,10 @@
  ;; If there is more than one, they won't work right.
  '(org-support-shift-select t)
  '(package-selected-packages
-   '(all-the-icons company doom-modeline doom-themes ef-themes
-		   multiple-cursors org-modern queue
-		   rainbow-delimiters sly smartparens ultra-scroll
-		   undo-tree))
+   '(all-the-icons company doom-modeline doom-themes ef-themes magit
+				   multiple-cursors org-modern org-roam queue
+				   rainbow-delimiters sly smartparens ultra-scroll
+				   undo-tree))
  '(sly-lisp-lambda-list-keyword-alignment t))
 
 (custom-set-faces
