@@ -60,4 +60,4 @@
 (use-package rainbow-delimiters
   :ensure t
   :hook (prog-mode sly-mrepl-mode)
-  :config (rainbow-delimiters-dark-theme))
+  :config (rainbow-delimiters-light-theme))
