@@ -39,12 +39,15 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(lisp-lambda-list-keyword-parameter-alignment t)
  '(org-support-shift-select t)
  '(package-selected-packages
-   '(all-the-icons company doom-modeline doom-themes ef-themes magit
-				   multiple-cursors org-modern org-roam queue
-				   rainbow-delimiters sly smartparens ultra-scroll
+   '(all-the-icons cl3-mode company doom-modeline ef-themes geiser
+				   geiser-racket multiple-cursors org-modern
+				   persistent-scratch rainbow-delimiters scratch
+				   selected-window-accent-mode sly smartparens
 				   undo-tree))
+ '(package-vc-selected-packages '((cl3-mode :url "https://gitlab.com/sebbb/cl3-mode")))
  '(sly-lisp-lambda-list-keyword-alignment t))
 
 (custom-set-faces
