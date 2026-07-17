@@ -4,6 +4,7 @@
 
 ;; Since we are using `use-package' we don't want to 'require` all packages.
 ;; So, we DO NOT call `package-initialize'. We also don't use `require'.
+(require 'package)
 
 ;; Uncomment to profile `init.el'.
 ;; (setq use-package-compute-statistics t)
@@ -79,8 +80,9 @@
       (load-directory subdir))))
 
 (load-directory "~/.emacs.d/config-utils")
-(load-directory "~/.emacs.d/config")
 (load "~/.emacs.d/minor-modes/7-billion-humans.el")
+(load "~/.emacs.d/minor-modes/window-mode.el")
+(load-directory "~/.emacs.d/config")
 
 (put 'narrow-to-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
