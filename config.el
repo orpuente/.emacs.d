@@ -387,9 +387,6 @@
   (my/lisp-editing-keybinds racket-repl-mode-map)
   (my/lisp-editing-keybinds racket-mode-map))
 
-;; Add local ob-racket directory to load-path before loading Babel languages
-(add-to-list 'load-path (expand-file-name "ob-racket" user-emacs-directory))
-
 (use-package org
   :ensure nil
   :hook (toggle-word-wrap visual-line-mode)
@@ -400,6 +397,8 @@
   (org-edit-src-content-indentation 0)
   (org-confirm-babel-evaluate nil)
   (setq org-src-window-setup 'current-window)
+
+  :load-path "ob-racket"
   
   :config
   ;; Load Org Babel languages
