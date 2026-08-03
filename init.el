@@ -1,90 +1,43 @@
-;; If setting up the config from scratch remember to.
-;; 1. (package-refresh-contents)
-;; 2. (package-upgrade-all)
+;;; init.el --- Minimal Literate Bootstrap -*- lexical-binding: t; -*-
 
-;; Since we are using `use-package' we don't want to 'require` all packages.
-;; So, we DO NOT call `package-initialize'. We also don't use `require'.
+;; ---------------------------------------------------------------------------
+;; 1. Startup Optimization (Garbage Collector)
+;; ---------------------------------------------------------------------------
+;; Temporarily raise the GC threshold to 50MB to speed up initial loading
+(setq gc-cons-threshold (* 50 1024 1024))
+
+;; ---------------------------------------------------------------------------
+;; 2. Custom Variables Isolation
+;; ---------------------------------------------------------------------------
+;; Redirect UI/Custom modifications (custom-set-variables / custom-set-faces)
+;; to a separate file so they don't clutter your main init.el
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file 'noerror))
+
+;; ---------------------------------------------------------------------------
+;; 3. Package Repositories & Defaults
+;; ---------------------------------------------------------------------------
 (require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-;; Uncomment to profile `init.el'.
-;; (setq use-package-compute-statistics t)
+;; Uncomment if MELPA Stable is desired:
+;; (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
-;; Uncomment to debug use-package loads.
-;; (setq use-package-verbose t)
-
-;; Alwas set (:defer t) when using `use-package'.
+;; Default behavior for use-package
 (setq use-package-always-defer t)
 
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
-;; and `package-pinned-packages`. Most users will not need or want to do this.
-;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+;; ---------------------------------------------------------------------------
+;; 4. Load Literate Configuration (config.org)
+;; ---------------------------------------------------------------------------
+(require 'org)
+(org-babel-load-file (expand-file-name "config.org" user-emacs-directory))
 
-;; We pass the &optional async-download argument to not block emacs.
-;; Additionally, we run this function after emacs has initialized.
-;; Before doing these two things this was by far the slowest initialization step.
-(add-hook 'emacs-startup-hook (lambda () (package-refresh-contents t)))
-
-;; Some global packages.
-(use-package cl-lib :demand t)
-(use-package all-the-icons
-  :if (display-graphic-p)
-  :ensure t
-  :demand t)
-
-;; Some packages we want to make sure are installed.
-(use-package sly :ensure t)
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(lisp-lambda-list-keyword-parameter-alignment t)
- '(org-support-shift-select t)
- '(package-selected-packages
-   '(all-the-icons cl3-mode company doom-modeline ef-themes geiser
-				   geiser-racket multiple-cursors org-modern
-				   persistent-scratch rainbow-delimiters scratch
-				   selected-window-accent-mode sly smartparens
-				   undo-tree))
- '(package-vc-selected-packages '((cl3-mode :url "https://gitlab.com/sebbb/cl3-mode")))
- '(sly-lisp-lambda-list-keyword-alignment t))
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-
-(defun load-directory (directory)
-  "Load recursively all `.el' files in DIRECTORY.
- The recursion loads the files before the subdirectories to allow
- subdirectories to depend on definitions made on their parents."
-  (let ((subdirectories ()))
-    (dolist (element (directory-files-and-attributes directory nil nil nil))
-      (let* ((path (car element))
-	     (fullpath (concat directory "/" path))
-	     (isdir (car (cdr element)))
-	     (ignore-dir (or (string= path ".") (string= path ".."))))
-	(cond
-	 ((and (eq isdir t) (not ignore-dir))
-	  (push fullpath subdirectories))
-	 ((and
-	   (eq isdir nil)
-	   (string= (substring path -3) ".el")
-	   (not (string= (substring path 0 2) ".#")))
-	  (load (file-name-sans-extension fullpath))))))
-    (dolist (subdir subdirectories)
-      (load-directory subdir))))
-
-(load-directory "~/.emacs.d/config-utils")
-(load "~/.emacs.d/minor-modes/7-billion-humans.el")
-(load "~/.emacs.d/minor-modes/window-mode.el")
-(load-directory "~/.emacs.d/config")
-
+;; ---------------------------------------------------------------------------
+;; 5. Restore Garbage Collector & Report Startup Time
+;; ---------------------------------------------------------------------------
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-threshold (* 2 1024 1024))
+            (message "Emacs successfully loaded in %s" (emacs-init-time))))
 (put 'narrow-to-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
-
-(message "Init time: %s" (emacs-init-time))

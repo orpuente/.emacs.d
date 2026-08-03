@@ -1,0 +1,882 @@
+#+TITLE: Emacs Configuration
+#+AUTHOR: Oscar Puente
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+#+OPTIONS: toc:2
+
+* Table of Contents :TOC:
+- [[#system--performance][System & Performance]]
+  - [[#load-elisp-cl-language-extension][Load ELisp CL language extension]]
+  - [[#directory-cleanup-no-littering][Directory Cleanup (~no-littering~)]]
+- [[#system-settings--native-options-emacs-native][System Settings & Native Options (~emacs-native~)]]
+  - [[#minimalist-interface--ui][Minimalist Interface & UI]]
+  - [[#key-translations][Key Translations]]
+  - [[#unset-default-shortcuts][Unset Default Shortcuts]]
+  - [[#typography--fonts][Typography & Fonts]]
+  - [[#startup-screen--initial-buffer][Startup Screen & Initial Buffer]]
+  - [[#indentation--tabs][Indentation & Tabs]]
+  - [[#help-window-management-quit-window][Help Window Management (~quit-window~)]]
+  - [[#suppress-compiler-warnings][Suppress Compiler Warnings]]
+- [[#appearance--ui][Appearance & UI]]
+  - [[#color-themes-ef-themes][Color Themes (~ef-themes~)]]
+  - [[#modeline-doom-modeline][Modeline (~doom-modeline~)]]
+  - [[#line-numbers-display-line-numbers][Line Numbers (~display-line-numbers~)]]
+  - [[#highlight-symbol-at-cursor-idle-highlight][Highlight symbol at cursor (~idle-highlight~)]]
+  - [[#prettify-symbols-prettify-symbols][Prettify Symbols (~prettify-symbols~)]]
+  - [[#cursor][Cursor]]
+  - [[#ultra-scroll-ultra-scroll][Ultra Scroll (~ultra-scroll~)]]
+- [[#file--buffer-management][File & Buffer Management]]
+  - [[#file-management-dired][File Management (~dired~)]]
+- [[#command-palette][Command Palette]]
+  - [[#floating-command-palette-vertico--vertico-posframe][Floating Command Palette (~vertico~ & ~vertico-posframe~)]]
+- [[#search][Search]]
+  - [[#buffer-fuzzy-search][Buffer Fuzzy Search]]
+  - [[#file-contents-search--orderless-matching-orderless--consult][File Contents Search & Orderless Matching (~orderless~ & ~consult~)]]
+- [[#editing--completion-tools][Editing & Completion Tools]]
+  - [[#in-buffer-completion-company][In-Buffer Completion (~company~)]]
+  - [[#undo-tree-undo-tree][Undo Tree (~undo-tree~)]]
+  - [[#smart-parentheses-smartparens][Smart Parentheses (~smartparens~)]]
+  - [[#rainbow-delimiters-rainbow-delimiters][Rainbow Delimiters (~rainbow-delimiters~)]]
+  - [[#multiple-cursors-multiple-cursors][Multiple Cursors (~multiple-cursors~)]]
+- [[#programming-environments][Programming Environments]]
+  - [[#common-lisp-sly][Common Lisp (~sly~)]]
+  - [[#cl3][CL3]]
+  - [[#clsl][CLSL]]
+  - [[#scheme-geiser][Scheme (~geiser~)]]
+  - [[#racket-racket-mode][Racket (~racket-mode~)]]
+- [[#org-mode][Org Mode]]
+  - [[#core-org-settings--babel-execution-org][Core Org Settings & Babel Execution (~org~)]]
+  - [[#org-babel-racket-integration-ob-racket][Org Babel Racket Integration (~ob-racket~)]]
+  - [[#modern-ui-styling-org-modern][Modern UI Styling (~org-modern~)]]
+  - [[#automatic-table-of-contents-toc-org][Automatic Table of Contents (~toc-org~)]]
+  - [[#polymode-poly-org][Polymode (~poly-org~)]]
+- [[#custom-keybindings-keybinds][Custom Keybindings (~keybinds~)]]
+  - [[#global-shortcuts][Global Shortcuts]]
+  - [[#window-navigation-window][Window Navigation (~window~)]]
+  - [[#lisp-shared][Lisp Shared]]
+  - [[#emacs-lisp][Emacs Lisp]]
+- [[#git-integration][Git Integration]]
+  - [[#git-interface-magit][Git Interface (~magit~)]]
+  - [[#gutter-git-indicators-diff-hl][Gutter Git Indicators (~diff-hl~)]]
+
+* System & Performance
+Core system optimizations, garbage collection tweaks, and runtime file hygiene settings 
+designed to keep Emacs fast, responsive, and uncluttered.
+ 
+** Load ELisp CL language extension
+
+#+begin_src emacs-lisp
+(use-package cl-lib :demand t)
+#+end_src
+
+** Directory Cleanup (~no-littering~)
+The ~no-littering~ package automatically redirects temporary and state files 
+created by Emacs and its packages to the ~var/~ and ~etc/~ subdirectories inside =~/.emacs.d/=.
+
+#+begin_src emacs-lisp
+(use-package no-littering
+  :ensure t
+  :demand t
+  :config
+  ;; Redirect auto-save files (#filename#) to var/auto-save/
+  (setq auto-save-file-name-transforms
+        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+
+  ;; Redirect backup files (filename~) to var/backup/
+  (setq backup-directory-alist
+        `((".*" . ,(no-littering-expand-var-file-name "backup/")))))
+#+end_src
+
+
+* System Settings & Native Options (~emacs-native~)
+Essential built-in Emacs options, UI element toggles, default typography, tab spacing, 
+and frame behavior adjustments to establish a clean baseline environment.
+
+** Minimalist Interface & UI
+Disable unnecessary UI elements and configure cursor and search scrolling behavior.
+
+#+begin_src emacs-lisp
+;; Hide UI elements
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+(scroll-bar-mode -1)
+(global-display-line-numbers-mode -1)
+
+;; Disable ring-bell.
+(setq ring-bell-function #'ignore)
+
+;; Editing and navigation behavior
+(delete-selection-mode 1)                        ; Replace selected text when typing
+(setq isearch-allow-scroll 'unlimited)           ; Allow scrolling during isearch
+(setq-default cursor-in-non-selected-windows nil)  ; Hide cursor in inactive windows
+#+end_src
+
+** Key Translations
+Translate ~C-i~ and ~C-[~ to super combinations (~s-i~ / ~s-[~) across newly created frames.
+
+#+begin_src emacs-lisp
+(defun my/translate-keys (&optional frame)
+  "Translate raw C-i and C-[ sequences to avoid collisions with TAB and ESC."
+  (keyboard-translate ?\C-i ?\s-i)
+  (keyboard-translate ?\C-\[ ?\s-\[))
+
+(add-hook 'after-make-frame-functions #'my/translate-keys)
+(my/translate-keys)
+#+end_src
+
+** Unset Default Shortcuts
+Remove conflicting built-in global and mode-specific keybindings.
+
+#+begin_src emacs-lisp
+;; Unbind mode-specific C-M-i bindings
+(keymap-unset lisp-interaction-mode-map "C-M-i" t)
+(keymap-unset emacs-lisp-mode-map "C-M-i" t)
+
+;; Global and mode-specific unbinds
+(dolist (key '("C-z" "C-a" "C-n" "C-o" "C-p"
+               "C-t" "C-]" "H-[" "M-e" "M-f"
+               "C-k" "C-l" "H-i" "C-j" "C-_" "C-/"
+               "s-j" "s-l" "s-i" "s-k" "s-["))
+  (unbind-key key)
+  (keymap-global-unset key t)
+  (keymap-unset lisp-interaction-mode-map key t))
+#+end_src
+
+** Typography & Fonts
+Apply ~FiraCode Nerd Font~ globally for both standalone frames and ~emacsclient~ instances.
+
+#+begin_src emacs-lisp
+(add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono 16")) ;; standalone
+(set-face-attribute 'default nil :font "FiraCode Nerd Font Mono 16")        ;; emacsclient
+
+;; Prevent Emacs from using proportional default fonts for symbols
+(setq use-default-font-for-symbols nil)
+
+;; Set a monospace font that contains math symbols (e.g., JuliaMono or DejaVu Sans Mono)
+;; https://github.com/cormullion/juliamono/releases
+(defvar my/fallback-font "JuliaMono")
+
+(set-fontset-font t 'greek             (font-spec :family my/fallback-font))
+(set-fontset-font t 'mathematical      (font-spec :family my/fallback-font))
+
+(dolist (range '((#x2100 . #x214f)     ; ℒ
+                 (#x2200 . #x22ff)     ; ∅ and math comparisons
+                 (#x1d400 . #x1d7ff))) ; 𝒹
+  (set-fontset-font t range (font-spec :family my/fallback-font)))
+#+end_src
+
+** Startup Screen & Initial Buffer
+Start directly into a clean ~*scratch*~ buffer set up in ~org-mode~.
+
+#+begin_src emacs-lisp
+(setq inhibit-startup-screen t
+      initial-scratch-message nil
+      initial-major-mode 'org-mode)
+#+end_src
+
+** Indentation & Tabs
+Configure tab width to 4 spaces.
+
+#+begin_src emacs-lisp
+(setq-default tab-width 4
+	          indent-tabs-mode nil)
+
+(setq backward-delete-char-untabify-method nil)
+#+end_src
+
+** Help Window Management (~quit-window~)
+Automatically focus =*Help*= windows.
+
+#+begin_src emacs-lisp
+(setq help-window-select t)
+#+end_src
+
+Ensure pressing ~q~ in help buffers completely kills the buffer instead of just burying it.
+/Note: Uses ~define-advice~, the modern replacement for ~defadvice~./
+
+#+begin_src emacs-lisp
+(define-advice quit-window (:before (&optional kill window) always-kill)
+  "Ensure `quit-window' always kills the buffer when called interactively."
+  (when (called-interactively-p 'interactive)
+    (setq kill t)))
+#+end_src
+
+** Suppress Compiler Warnings
+Prevents compilation warning buffers from popping up during package installation.
+
+#+begin_src emacs-lisp
+;;(setq native-comp-async-report-warnings-errors nil)
+;;(setq warning-minimum-level :error)
+#+end_src
+
+
+* Appearance & UI
+Visual enhancements, color themes, modeline configurations, and buffer indicator styles 
+to create a cohesive, readable, and modern interface.
+
+** Color Themes (~ef-themes~)
+Colorful, high-contrast, and legible themes crafted by Protesilaos Stavrou.
+Sets ~ef-maris~ as the default theme with a quick keybinding to rotate through random dark themes.
+
+#+begin_src emacs-lisp
+(use-package ef-themes
+  :ensure t
+  :demand t
+  :init
+  ;; Load the default theme before displaying frames
+  ;; (load-theme 'ef-bio :no-confirm)
+  (load-theme 'ef-maris-dark :no-confirm)
+  :bind
+  (("C-S-n" . ef-themes-load-random-dark)
+   ("C-S-p" . (lambda ()
+                (interactive)
+                (load-theme 'ef-maris-dark :no-confirm)))))
+#+end_src
+
+** Modeline (~doom-modeline~)
+A minimalist and modern status line powered by ~all-the-icons~.
+
+#+begin_src emacs-lisp
+(use-package doom-modeline
+  :ensure t
+  :demand t
+  :init (doom-modeline-mode 1))
+#+end_src
+
+** Line Numbers (~display-line-numbers~)
+Enables relative or absolute line numbers exclusively in programming buffers (~prog-mode~).
+
+#+begin_src emacs-lisp
+(use-package display-line-numbers
+  :hook (prog-mode . display-line-numbers-mode))
+#+end_src
+
+** Highlight symbol at cursor (~idle-highlight~)
+Highlight the all visible occurrances of the identifier under the cursor.
+
+#+begin_src emacs-lisp
+(use-package idle-highlight-mode
+  :ensure t
+  :hook prog-mode
+  :config
+  (setq idle-highlight-idle-time 0.02))
+#+end_src
+
+** Prettify Symbols (~prettify-symbols~)
+Shows common identifiers as symbols, so that code is more concise.
+
+#+begin_src emacs-lisp
+(defun cl-pretty-symbols ()
+  "This function enables pretty symbols for cl-like lisps."
+  (setq prettify-symbols-alist
+	    '(("lambda"       . ?λ)
+	      ("defun"        . ?󰊕)
+	      ("defmacro"     . ?󰡷)
+	      ("defparameter" . ?)
+	      ("defvar"       . ?󰕷)
+	      ("cond"         . ?󰘬)
+	      ("!="           . ?≠)
+	      ("<="           . ?≤)
+	      (">="           . ?≥)
+	      ("list"         . ?ℒ)
+	      ("nil"          . ?∅)))
+  (prettify-symbols-mode 1))
+
+(defun cl3-pretty-symbols ()
+  "This function enables pretty symbols for CL3."
+  (setq prettify-symbols-alist
+	    '(("lambda"       . ?λ)
+	      ("def"          . ?󰊕)
+	      ("defm"         . ?)
+	      ("defstruct"    . ?)
+	      ("defmacro"     . ?󰡷)
+	      ("defprm"       . ?)
+	      ("defvar"       . ?󰕷)
+	      ("cond"         . ?󰘬)
+	      ("self"         . ?○)
+	      ("!="           . ?≠)
+	      ("<="           . ?≤)
+	      (">="           . ?≥)
+	      ("for"          . ?∀)
+	      ("list"         . ?ℒ)
+	      ("nil"          . ?∅)))
+  (prettify-symbols-mode 1))
+
+(defun scheme-pretty-symbols ()
+  "This function enables pretty symbols for scheme-like lisps."
+  (setq prettify-symbols-alist
+	    '(("lambda"             . ?λ)
+	      ("define"             . ?𝒹)
+          ("define-syntax-rule" . ?󰡷)
+	      ("cond"               . ?󰘬)
+	      ("!="                 . ?≠)
+	      ("<="                 . ?≤)
+	      (">="                 . ?≥)
+	      ("list"               . ?ℒ)
+	      ("null"               . ?∅)))
+  (prettify-symbols-mode 1))
+
+;; Pretty symbols hooks.
+(add-hook 'emacs-lisp-mode-hook       #'cl-pretty-symbols)
+(add-hook 'lisp-interaction-mode-hook #'cl-pretty-symbols)
+(add-hook 'lisp-mode-hook             #'cl-pretty-symbols)
+(add-hook 'cl3-mode-hook              #'cl3-pretty-symbols)
+(add-hook 'racket-mode-hook           #'scheme-pretty-symbols)
+(add-hook 'scheme-mode-hook           #'scheme-pretty-symbols)
+(add-hook 'geiser-repl-mode-hook      #'scheme-pretty-symbols)
+(add-hook 'racket-repl-mode-hook      #'scheme-pretty-symbols)
+(add-hook 'sly-mrepl-mode-hook        #'cl-pretty-symbols)
+#+end_src
+
+** Cursor
+*** Blinking
+Disable cursor blinking.
+
+#+begin_src emacs-lisp
+(blink-cursor-mode -1)
+#+end_src
+
+*** Beacon (~beacon~)
+Flashes the cursor line whenever switching windows or scrolling long distances.
+Uses the Omarchy neon green palette for visual harmony.
+
+#+begin_src emacs-lisp
+(use-package beacon
+  :ensure t
+  :init
+  (beacon-mode 1)
+  :custom
+  ;;(beacon-color "#15B046")
+  (beacon-blink-when-window-scrolls t)
+  (beacon-blink-when-window-changes t))
+#+end_src 
+
+** Ultra Scroll (~ultra-scroll~)
+
+#+begin_src emacs-lisp
+(use-package ultra-scroll
+  ;;:vc (:url "https://github.com/jdtsmith/ultra-scroll") ; if desired (emacs>=v30)
+  :ensure t
+  :init
+  (setq scroll-conservatively 3 ; or whatever value you prefer, since v0.4
+        scroll-margin 0)        ; important: scroll-margin>0 not yet supported
+  :config
+  (ultra-scroll-mode 1))
+#+end_src
+
+* File & Buffer Management
+Streamlined tools for directory navigation, file manipulation, and active buffer management 
+using built-in Emacs utilities like Dired and IBuffer.
+
+** File Management (~dired~)
+Configures the built-in ~dired~ file manager to group directories first,
+hide unnecessary details, colorize file attributes, and show modern file icons.
+
+#+begin_src emacs-lisp
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :hook (dired-mode . dired-hide-details-mode)
+  :bind ("C-d" . dired-jump)
+  :custom (dired-listing-switches "-agho --group-directories-first"))
+
+;; TODO: Figure out how to use use nerd-icons-dired instead
+;; (use-package nerd-icons-dired :hook (dired-mode . nerd-icons-dired-mode))
+
+;; File and folder icons in Dired
+(use-package all-the-icons-dired
+  :ensure t
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+;; Colorize permissions, dates, and file sizes
+(use-package diredfl
+  :ensure t
+  :hook (dired-mode . diredfl-mode))
+
+(defun my/dired-hide-permissions ()
+  "Hide permissions field in dired buffer."
+  (save-excursion
+	(goto-char (point-min))
+	(while (re-search-forward dired-re-perms nil t)
+	  (let ((ov (make-overlay (match-beginning 0) (1+ (match-end 0)))))
+	(overlay-put ov 'invisible t)
+	(overlay-put ov 'evaporate t)))))
+
+(add-hook 'dired-after-readin-hook #'my/dired-hide-permissions)
+#+end_src
+
+* Command Palette
+
+** Floating Command Palette (~vertico~ & ~vertico-posframe~)
+Provides a centered, floating completion UI for ~M-x~, file navigation, and buffer switching, 
+complemented by ~marginalia~ for rich parameter descriptions.
+
+#+begin_src emacs-lisp
+;; Vertico: Modern completion UI
+(use-package vertico
+  :ensure t
+  :init
+  (vertico-mode 1)
+  :custom
+  (vertico-cycle t)) ;; Cycle candidates infinitely
+
+;; Marginalia: Rich contextual annotations next to commands
+(use-package marginalia
+  :ensure t
+  :init
+  (marginalia-mode 1))
+
+;; Vertico-Posframe: Renders Vertico as a centered floating overlay
+(use-package vertico-posframe
+  :ensure t
+  :after vertico
+  :init
+  (vertico-posframe-mode 1)
+  :custom
+  (vertico-posframe-poshandler #'posframe-poshandler-frame-center)
+  (vertico-posframe-border-width 2)
+  (vertico-posframe-parameters
+   '((left-fringe . 8)
+     (right-fringe . 8))))
+#+end_src
+
+
+* Search
+
+** TODO Buffer Fuzzy Search
+
+Make this work with ~vertico~.
+
+#+begin_src emacs-lisp
+;; (ido-mode 1)
+;; (ido-everywhere 1)
+;; (setq ido-enable-flex-matching t)
+#+end_src
+
+** File Contents Search & Orderless Matching (~orderless~ & ~consult~)
+Replaces standard search with fuzzy multi-word completion and high-speed project search.
+
+#+begin_src emacs-lisp
+;; Orderless: Match search terms in any order (fuzzy searching)
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
+
+;; Consult: Powerful search and navigation commands (Telescope alternative)
+(use-package consult
+  :ensure t
+  :bind
+  ;; File and Buffer Search
+  (("C-b"     . consult-buffer)           ; Enhanced buffer switcher with preview
+   ("C-c f"   . consult-fd)               ; Find files using 'fd' (very fast)
+   ("C-c g"   . consult-ripgrep)          ; Live grep inside files with ripgrep
+   ("C-s"     . consult-line)             ; Search text inside current buffer with preview
+   :map minibuffer-local-map
+   ("M-s"     . consult-history))
+  :init
+  ;; Live preview setup
+  (setq consult-preview-key 'any))
+#+end_src
+
+
+* Editing & Completion Tools
+Intelligent code completion, dynamic delimiter coloring, and automatic bracket pair
+management to streamline text editing across various programming environments.
+
+** In-Buffer Completion (~company~)
+Provides modern text and code auto-completion. Uses ~M-j~ / ~M-k~ for navigation
+and ~TAB~ to insert the selection, leaving ~RET~ strictly for newlines.
+
+#+begin_src emacs-lisp
+(use-package company
+  :ensure t
+  :defer t
+  :hook ((prog-mode . company-mode)
+         (geiser-repl-mode . company-mode))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0)
+  (company-selection-wrap-around t)
+  (company-tooltip-align-annotations t)
+  :bind
+  (("C-SPC" . company-complete)
+   :map company-active-map
+   ("M-j" . company-select-next)
+   ("M-k" . company-select-previous)
+   ("<tab>" . company-complete-selection)
+   ("TAB" . company-complete-selection)
+   ("<enter>" . nil)
+   ("RET" . nil)
+   ("C-h" . nil)))
+#+end_src
+
+** Undo Tree (~undo-tree~)
+Provides better undo/redo functionality.
+
+#+begin_src emacs-lisp
+(use-package undo-tree
+  :ensure t
+  :defer 1
+  :bind (:map undo-tree-map
+              ("C-/" . nil)
+              ("C-_" . nil)
+              ("C-z" . undo-tree-undo)
+              ("C-y" . undo-tree-redo))
+  :config (global-undo-tree-mode))
+#+end_src
+
+** Smart Parentheses (~smartparens~)
+Automatic insertion, structural editing, and strict pairing for code and notes.
+Disables apostrophe auto-pairing to prevent issues with Lisp quote notation (~'~).
+
+#+begin_src emacs-lisp
+(use-package smartparens
+  :ensure t
+  :hook (((prog-mode geiser-repl-mode racket-repl-mode sly-mrepl-mode) . smartparens-strict-mode))
+  :config
+  (require 'smartparens-config)
+  
+  ;; Disable single-quote auto-pairing specifically for programming and Lisp modes
+  (sp-with-modes '(prog-mode emacs-lisp-mode lisp-interaction-mode geiser-repl-mode sly-mrepl-mode)
+    (sp-local-pair "'" nil :actions nil))
+
+  ;; Enable auto-pairing for Org-specific formatting tags
+  (sp-with-modes 'org-mode
+    (sp-local-pair "*" "*")
+    (sp-local-pair "=" "=")
+    (sp-local-pair "~" "~")
+    (sp-local-pair "/" "/"))
+
+  ;; Disable overlay highlights
+  (setq sp-highlight-pair-overlay nil)
+  (setq sp-highlight-wrap-overlay nil)
+  (setq sp-highlight-wrap-tag-overlay nil))
+#+end_src
+
+** Rainbow Delimiters (~rainbow-delimiters~)
+Colorizes matching parentheses, brackets, and braces according to their depth.
+
+#+begin_src emacs-lisp
+(use-package rainbow-delimiters
+  :ensure t
+  :hook ((prog-mode geiser-repl-mode racket-repl-mode sly-mrepl-mode) . rainbow-delimiters-mode))
+#+end_src
+
+** Multiple Cursors (~multiple-cursors~)
+
+#+begin_src emacs-lisp
+(use-package multiple-cursors
+  :ensure t
+  :demand t
+  :config (progn
+	    (keymap-unset mc/keymap "C-v")
+	    (keymap-unset mc/keymap "<return>")
+	    (global-set-key (kbd "C-M-<up>") #'mc/mark-previous-like-this)
+	    (global-set-key (kbd "C-M-<down>") #'mc/mark-next-like-this)
+	    (global-set-key (kbd "C-M-i") #'mc/mark-previous-like-this)
+	    (global-set-key (kbd "C-M-k") #'mc/mark-next-like-this)))
+#+end_src
+
+* Programming Environments
+
+** Common Lisp (~sly~)
+
+Configure the CL HyperSpec.
+
+#+begin_src emacs-lisp
+(setq browse-url-browser-function 'eww-browse-url
+      common-lisp-hyperspec-root "file:///home/orpuente/.emacs.d/lisp/documentation/HyperSpec-7-0/HyperSpec/")
+#+end_src
+
+Add Sly, a modern slime replacement.
+
+#+begin_src emacs-lisp
+(defun enable-ansi-colors-in-sly-mrepl ()
+  (add-to-list 'sly-mrepl-output-filter-functions 'ansi-color-apply))
+
+(use-package sly
+  :ensure t
+  :hook ((sly-mrepl-mode-hook . enable-ansi-colors-in-sly-mrepl)))
+#+end_src
+
+** CL3
+
+#+begin_src emacs-lisp
+(use-package cl3-mode
+  :vc (:url "https://gitlab.com/sebbb/cl3-mode"))
+#+end_src
+
+** CLSL
+
+Common LISP Shading Language.
+
+#+begin_src emacs-lisp
+(defvar cl-custom-indents
+  '((defshader (4 4 (&lambda &body)))
+	(clsl (&lambda &body))))
+
+(defun cl-put-custom-indent (symbol indent-spec)
+  (put symbol 'common-lisp-indent-function indent-spec))
+
+(defun cl-activate-custom-indents ()
+  (interactive)
+  (mapc (lambda (indent) (apply #'cl-put-custom-indent indent))
+		cl-custom-indents)
+  'done)
+
+(dolist (hook '(sly-mode-hook sly-mrepl-hook))
+  (add-hook hook #'cl-activate-custom-indents))
+#+end_src
+
+** Scheme (~geiser~)
+
+#+begin_src emacs-lisp
+(use-package geiser
+  :ensure t
+;;  :hook ((scheme-mode-hook . geiser-mode))
+  :config (setq geiser-mode-start-repl-p t))
+#+end_src
+
+** Racket (~racket-mode~)
+
+#+begin_src emacs-lisp
+(use-package racket-mode
+  :ensure t
+;;  :hook racket-repl
+  :config
+  (my/lisp-editing-keybinds racket-repl-mode-map)
+  (my/lisp-editing-keybinds racket-mode-map))
+#+end_src
+
+* Org Mode
+Comprehensive configuration for document authoring, Babel code block execution across languages 
+(Python, Racket, Graphviz), and modern visual styling for headlines and markup.
+
+** Core Org Settings & Babel Execution (~org~)
+Configures Org Mode with Babel language evaluation (Python, JS, Graphviz Dot, Racket), 
+disables evaluation confirmation prompts, and sets keybindings for inserting code blocks.
+
+#+begin_src emacs-lisp
+;; Add local ob-racket directory to load-path before loading Babel languages
+(add-to-list 'load-path (expand-file-name "ob-racket" user-emacs-directory))
+
+(use-package org
+  :ensure nil
+  :hook (toggle-word-wrap visual-line-mode)
+  :bind (:map org-mode-map
+              ("s-i" . (lambda () (interactive) (insert "#+begin_src \n#+end_src") (forward-line -1) (end-of-line))))
+  :custom
+  (org-support-shift-select t)
+  (org-edit-src-content-indentation 0)
+  (org-confirm-babel-evaluate nil)
+  (setq org-src-window-setup 'current-window)
+  
+  :config
+  ;; Load Org Babel languages
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((C . t)
+	 (python . t)
+	 (lisp . t)
+	 (racket . t))))
+#+end_src
+
+** Org Babel Racket Integration (~ob-racket~)
+Enables execution of Racket and Scribble source code blocks within Org documents.
+
+#+begin_src emacs-lisp
+  (use-package ob-racket
+    :after org
+    :pin manual)
+#+end_src
+
+** Modern UI Styling (~org-modern~)
+Enhances Org Mode with modern typography, hidden markup characters, and styled bullet icons.
+
+#+begin_src emacs-lisp
+(use-package org-modern
+  :ensure t
+  :demand t
+  :custom
+  (org-auto-align-tags nil)
+  (org-tags-column 0)
+  (org-catch-invisible-edits 'show-and-error)
+  (org-special-ctrl-a/e t)
+  (org-insert-heading-respect-content t)
+  (org-hide-emphasis-markers t)
+  (org-pretty-entities t)
+  (org-agenda-tags-column 0)
+  (org-ellipsis " ")
+  :config
+  (global-org-modern-mode 1))
+#+end_src
+
+** Automatic Table of Contents (~toc-org~)
+Automatically updates the Table of Contents whenever the Org file is saved.
+
+#+begin_src emacs-lisp
+(use-package toc-org
+  :ensure t
+  :hook (org-mode . toc-org-enable))
+#+end_src
+
+** Polymode (~poly-org~)
+Enables multiple major modes inside a single Org-mode buffer. It eliminates the need for ~C-c '~.
+
+I spent 4h debugging weird org-mode visual artifacts due to this mode adjusting the face.
+Make sure to ~package-delete~ it if it starts giving troubles.
+
+#+begin_src emacs-lisp
+(use-package polymode
+  :ensure t
+  :defer t
+  :config
+  ;; Fixes occasional indentation jumps when shifting modes.
+  (setq polymode-move-to-inner-on-create nil))
+
+(use-package poly-org
+  :ensure t
+  :after (org polymode)
+  :hook org-mode
+  :config
+  ;; Stops the mode from changing src blocks faces.
+  (oset poly-org-innermode :adjust-face '(:inherit org-block :extend t))
+  (oset poly-org-innermode :protect-font-lock t))
+
+;; (mapcar #'eieio-slot-descriptor-name (eieio-class-slots (class-of poly-org-hostmode)))
+#+end_src
+
+
+* Custom Keybindings (~keybinds~)
+Universal editing actions and quick documentation lookups.
+
+** Global Shortcuts
+Standard editing shortcuts (~Select All~, ~Paste~, ~Undo~).
+
+#+begin_src emacs-lisp
+(bind-keys
+ ;; Common editing shortcuts
+ ("C-a" . mark-whole-buffer)
+ ("C-v" . yank))
+
+;; Quick Help
+(global-set-key (kbd "M-h") (kbd "C-h o <return>"))
+
+;; Fold code
+(use-package hideshow
+  :ensure nil
+  :bind (("C-f" . #'hs-toggle-hiding)
+         ("M-f" . #'hs-toggle-hiding))
+  :hook (prog-mode . hs-minor-mode))
+#+end_src
+
+** Window Navigation (~window~)
+Custom mode for jupyter-notebook-like window navigation.
+
+#+begin_src emacs-lisp
+(use-package hydra
+  :ensure t)
+
+(load "~/.emacs.d/minor-modes/window-mode.el")
+(use-package window-mode
+  :config (window-mode 1))
+
+(global-set-key (kbd "C-0") #'other-window)
+#+end_src
+
+** Lisp Shared
+
+#+begin_src emacs-lisp
+(defun my/backward-transpose-sexp ()
+  (interactive)
+  (sp-transpose-sexp -1))
+
+(defun my/kill-whitespace ()
+  (interactive)
+  (let ((start (point)))
+	(skip-chars-forward " \t\n\r\f")
+	(when (> (point) start)
+	  (delete-region start (point))
+	  t)))
+
+(defun my/kill-whitespace-backward ()
+  (interactive)
+  (let ((start (point)))
+	(skip-chars-backward " \t\n\r\f")
+	(when (< (point) start)
+	  (delete-region (point) start)
+	  t)))
+
+(defun my/kill-whitespace-or-sexp ()
+  (interactive)
+  (unless (my/kill-whitespace)
+	(sp-kill-sexp)))
+
+(defun my/kill-whitespace-or-sexp-backward ()
+  (interactive)
+  (unless (my/kill-whitespace-backward)
+	(sp-backward-kill-sexp)))
+
+(defun my/lisp-editing-keybinds (keymap)
+  ;; C-M-[key] (Ctrl + Alt + [key])
+  (define-key keymap (kbd "M-<left>") #'my/backward-transpose-sexp)
+  (define-key keymap (kbd "M-<right>") #'sp-transpose-sexp)
+  (define-key keymap (kbd "M-<up>") #'my/backward-transpose-sexp)
+  (define-key keymap (kbd "M-<down>") #'sp-transpose-sexp)
+
+  ;; C-[Arrows]
+  (define-key keymap (kbd "C-<left>")  #'backward-sexp)
+  (define-key keymap (kbd "C-<right>") #'forward-sexp)
+  (define-key keymap (kbd "C-<up>")    #'backward-sexp)
+  (define-key keymap (kbd "C-<down>")  #'forward-sexp)
+  
+  ;;; ast-actions
+  (define-key keymap (kbd "H-[") #'sp-backward-slurp-sexp)
+  (define-key keymap (kbd "C-]") #'sp-backward-barf-sexp)
+  (define-key keymap (kbd "M-[") #'sp-forward-barf-sexp)
+  (define-key keymap (kbd "M-]") #'sp-forward-slurp-sexp)
+  (define-key keymap (kbd "C-r") #'raise-sexp)
+  (define-key keymap (kbd "C-(") #'sp-backward-unwrap-sexp)
+  (define-key keymap (kbd "C-)") #'sp-unwrap-sexp)
+  (define-key keymap (kbd "C-<delete>") #'my/kill-whitespace-or-sexp)
+  (define-key keymap (kbd "C-<backspace>") #'my/kill-whitespace-or-sexp-backward))
+
+(my/lisp-editing-keybinds lisp-mode-shared-map)
+#+end_src
+
+** Emacs Lisp
+
+#+begin_src emacs-lisp
+(define-key emacs-lisp-mode-map (kbd "C-c C-c") #'eval-defun)
+#+end_src
+
+* Git Integration
+Powerful interface for Git operations and real-time gutter indicators for modified lines.
+
+** Git Interface (~magit~)
+The absolute best Git porcelain interface available. Prefers opening full-screen for clarity.
+
+#+begin_src emacs-lisp
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status)
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
+#+end_src
+
+** Gutter Git Indicators (~diff-hl~)
+Highlights uncommitted changes (adds, deletes, modifications) in the fringe/gutter area.
+
+#+begin_src emacs-lisp
+(use-package diff-hl
+  :ensure t
+  :hook ((prog-mode . diff-hl-mode)
+         (org-mode . diff-hl-mode)
+         (dired-mode . diff-hl-dired-mode-unless-remote))
+  :config
+  ;; Refresh indicators cleanly when using Magit
+  (add-hook 'magit-pre-refresh-hook #'diff-hl-magit-pre-refresh)
+  (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh))
+#+end_src

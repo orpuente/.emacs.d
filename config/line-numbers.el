@@ -1,1 +1,0 @@
-(use-package display-line-numbers :ensure t :hook prog-mode)
