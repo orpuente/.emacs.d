@@ -397,9 +397,7 @@
   (org-edit-src-content-indentation 0)
   (org-confirm-babel-evaluate nil)
   (setq org-src-window-setup 'current-window)
-
   :load-path "ob-racket"
-  
   :config
   ;; Load Org Babel languages
   (org-babel-do-load-languages
@@ -448,8 +446,6 @@
   ;; Stops the mode from changing src blocks faces.
   (oset poly-org-innermode :adjust-face '(:inherit org-block :extend t))
   (oset poly-org-innermode :protect-font-lock t))
-
-;; (mapcar #'eieio-slot-descriptor-name (eieio-class-slots (class-of poly-org-hostmode)))
 
 (bind-keys
  ;; Common editing shortcuts

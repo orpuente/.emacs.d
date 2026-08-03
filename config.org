@@ -670,7 +670,7 @@ disables evaluation confirmation prompts, and sets keybindings for inserting cod
   (org-edit-src-content-indentation 0)
   (org-confirm-babel-evaluate nil)
   (setq org-src-window-setup 'current-window)
-  :load-path "ob-racket"  
+  :load-path "ob-racket"
   :config
   ;; Load Org Babel languages
   (org-babel-do-load-languages
