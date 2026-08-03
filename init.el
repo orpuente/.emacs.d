@@ -21,6 +21,12 @@
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
+;; Uncomment to profile `init.el'.
+;; (setq use-package-compute-statistics t)
+
+;; Uncomment to debug use-package loads.
+;; (setq use-package-verbose t)
+
 ;; Uncomment if MELPA Stable is desired:
 ;; (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
