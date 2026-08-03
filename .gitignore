@@ -7,7 +7,6 @@
 # Explicitly allow specific files
 !.gitignore
 !init.el
-!config.el
 !config.org
 !config-utils/**
 !custom.el
