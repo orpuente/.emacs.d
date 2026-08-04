@@ -343,12 +343,16 @@ Uses the Omarchy neon green palette for visual harmony.
 (use-package beacon
   :ensure t
   :init
+  (cl-flet ((beacon-sync-color (&rest _)
+              (when (facep 'cursor)
+                (setq beacon-color (face-attribute 'cursor :background)))))
+    (add-hook 'window-setup-hook #'beacon-sync-color)
+    (advice-add 'load-theme :after #'beacon-sync-color))
   (beacon-mode 1)
   :custom
-  ;;(beacon-color "#15B046")
   (beacon-blink-when-window-scrolls t)
   (beacon-blink-when-window-changes t))
-#+end_src 
+#+end_src
 
 ** Ultra Scroll (~ultra-scroll~)
 
