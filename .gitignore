@@ -9,7 +9,6 @@
 !init.el
 !config.org
 !config-utils/**
-!custom.el
 !fonts/**
 !minor-modes/**
 !ob-racket/**
