@@ -662,9 +662,14 @@ disables evaluation confirmation prompts, and sets keybindings for inserting cod
 #+begin_src emacs-lisp
 (use-package org
   :ensure nil
-  :hook (toggle-word-wrap visual-line-mode)
+  :hook ((org-mode . toggle-word-wrap)
+         (org-mode . visual-line-mode))
   :bind (:map org-mode-map
-              ("s-i" . (lambda () (interactive) (insert "#+begin_src \n#+end_src") (forward-line -1) (end-of-line))))
+              ("s-i" . (lambda ()
+                         (interactive)
+                         (insert "#+begin_src \n#+end_src")
+                         (forward-line -1)
+                         (end-of-line))))
   :custom
   (org-support-shift-select t)
   (org-edit-src-content-indentation 0)
@@ -672,11 +677,9 @@ disables evaluation confirmation prompts, and sets keybindings for inserting cod
   (setq org-src-window-setup 'current-window)
   :load-path "ob-racket"
   :config
-  ;; Load Org Babel languages
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((C . t)
-	 (python . t)
+   '((python . t)
 	 (lisp . t)
 	 (racket . t))))
 #+end_src
@@ -697,6 +700,8 @@ Enhances Org Mode with modern typography, hidden markup characters, and styled b
 (use-package org-modern
   :ensure t
   :demand t
+  :after org
+  :hook org-mode
   :custom
   (org-auto-align-tags nil)
   (org-tags-column 0)
@@ -706,9 +711,7 @@ Enhances Org Mode with modern typography, hidden markup characters, and styled b
   (org-hide-emphasis-markers t)
   (org-pretty-entities t)
   (org-agenda-tags-column 0)
-  (org-ellipsis " ")
-  :config
-  (global-org-modern-mode 1))
+  (org-ellipsis " "))
 #+end_src
 
 ** Automatic Table of Contents (~toc-org~)
@@ -727,21 +730,21 @@ I spent 4h debugging weird org-mode visual artifacts due to this mode adjusting 
 Make sure to ~package-delete~ it if it starts giving troubles.
 
 #+begin_src emacs-lisp
-(use-package polymode
-  :ensure t
-  :defer t
-  :config
-  ;; Fixes occasional indentation jumps when shifting modes.
-  (setq polymode-move-to-inner-on-create nil))
-
-(use-package poly-org
-  :ensure t
-  :after (org polymode)
-  :hook org-mode
-  :config
-  ;; Stops the mode from changing src blocks faces.
-  (oset poly-org-innermode :adjust-face '(:inherit org-block :extend t))
-  (oset poly-org-innermode :protect-font-lock t))
+;; (use-package polymode
+;;   :ensure t
+;;   :defer t
+;;   :config
+;;   ;; Fixes occasional indentation jumps when shifting modes.
+;;   (setq polymode-move-to-inner-on-create nil))
+;; 
+;; (use-package poly-org
+;;   :ensure t
+;;   :after (org polymode)
+;;   :hook org-mode
+;;   :config
+;;   ;; Stops the mode from changing src blocks faces.
+;;   (oset poly-org-innermode :adjust-face '(:inherit org-block :extend t))
+;;   (oset poly-org-innermode :protect-font-lock t))
 #+end_src
 
 
