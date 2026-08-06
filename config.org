@@ -29,7 +29,6 @@
 - [[#command-palette][Command Palette]]
   - [[#floating-command-palette-vertico--vertico-posframe][Floating Command Palette (~vertico~ & ~vertico-posframe~)]]
 - [[#search][Search]]
-  - [[#buffer-fuzzy-search][Buffer Fuzzy Search]]
   - [[#file-contents-search--orderless-matching-orderless--consult][File Contents Search & Orderless Matching (~orderless~ & ~consult~)]]
 - [[#editing--completion-tools][Editing & Completion Tools]]
   - [[#in-buffer-completion-company][In-Buffer Completion (~company~)]]
@@ -61,7 +60,7 @@
 * System & Performance
 Core system optimizations, garbage collection tweaks, and runtime file hygiene settings 
 designed to keep Emacs fast, responsive, and uncluttered.
- 
+
 ** Load ELisp CL language extension
 
 #+begin_src emacs-lisp
@@ -447,16 +446,6 @@ complemented by ~marginalia~ for rich parameter descriptions.
 
 
 * Search
-
-** TODO Buffer Fuzzy Search
-
-Make this work with ~vertico~.
-
-#+begin_src emacs-lisp
-;; (ido-mode 1)
-;; (ido-everywhere 1)
-;; (setq ido-enable-flex-matching t)
-#+end_src
 
 ** File Contents Search & Orderless Matching (~orderless~ & ~consult~)
 Replaces standard search with fuzzy multi-word completion and high-speed project search.
