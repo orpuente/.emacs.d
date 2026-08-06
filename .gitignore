@@ -1,9 +1,6 @@
 # Ignore everything by default
 *
 
-# Allow directories to be traversed
-!*/
-
 # Explicitly allow specific files
 !.gitignore
 !init.el
