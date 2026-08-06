@@ -668,7 +668,7 @@ disables evaluation confirmation prompts, and sets keybindings for inserting cod
   (org-support-shift-select t)
   (org-edit-src-content-indentation 0)
   (org-confirm-babel-evaluate nil)
-  (setq org-src-window-setup 'current-window)
+  (org-src-window-setup 'current-window)
   :load-path "ob-racket"
   :config
   (org-babel-do-load-languages
