@@ -25,6 +25,7 @@
   - [[#prettify-symbols-prettify-symbols][Prettify Symbols (~prettify-symbols~)]]
   - [[#cursor][Cursor]]
   - [[#ultra-scroll-ultra-scroll][Ultra Scroll (~ultra-scroll~)]]
+  - [[#color-previews-colorful][Color previews (~colorful~)]]
 - [[#file--buffer-management][File & Buffer Management]]
   - [[#file-management-dired][File Management (~dired~)]]
 - [[#command-palette][Command Palette]]
@@ -373,6 +374,13 @@ Uses the Omarchy neon green palette for visual harmony.
         scroll-margin 0)        ; important: scroll-margin>0 not yet supported
   :config
   (ultra-scroll-mode 1))
+#+end_src
+
+** Color previews (~colorful~)
+
+#+begin_src emacs-lisp
+(use-package colorful-mode
+  :ensure t)
 #+end_src
 
 * File & Buffer Management
