@@ -231,10 +231,11 @@ Sets ~ef-maris~ as the default theme with a quick keybinding to rotate through r
   :demand t
   :init
   ;; Load the default theme before displaying frames
-  ;; (load-theme 'ef-bio :no-confirm)
+  ;; (load-theme 'ef-duo-dark :no-confirm)
   (load-theme 'ef-maris-dark :no-confirm)
   :bind
   (("C-S-n" . ef-themes-load-random-dark)
+   ("C-n"   . ef-themes-load-random-light)
    ("C-S-p" . (lambda ()
                 (interactive)
                 (load-theme 'ef-maris-dark :no-confirm)))))
