@@ -123,9 +123,26 @@ Translate ~C-i~ and ~C-[~ to super combinations (~s-i~ / ~s-[~) across newly cre
 
 #+begin_src emacs-lisp
 (defun my/translate-keys (&optional frame)
-  "Translate raw C-i and C-[ sequences to avoid collisions with TAB and ESC."
+  "Translate raw C-i, C-m, and C-[ sequences to avoid collisions with TAB, RET, and ESC."
+  ;; Fix C-i -> TAB
+  ;; (define-key input-decode-map [?\C-i] [C-i])
+  ;; (define-key input-decode-map [?\S-\C-i] [C-S-i])
+  ;; (define-key input-decode-map [?\C-\M-i] [C-M-i])
+
+  ;; Fix C-m -> RET
+  ;; (define-key input-decode-map [?\C-m] [C-m])
+  ;; (define-key input-decode-map [?\S-\C-m] [C-S-m])
+  ;; (define-key input-decode-map [?\C-\M-m] [C-M-m])  ; apparently this is possible in the kitty terminal protocol
+
+  ;; Fix C-[ -> ESC
+  ;; (define-key input-decode-map [?\C-\[] [C-lbracket])
+  ;; (define-key input-decode-map [?\S-\C-\[] [C-S-lbracket])
+  ;; (define-key input-decode-map [?\C-\M-\[] [C-M-lbracket])
+  
   (keyboard-translate ?\C-i ?\s-i)
-  (keyboard-translate ?\C-\[ ?\s-\[))
+  (keyboard-translate ?\C-m ?\s-m)
+  (keyboard-translate ?\C-\[ ?\s-\[)
+  )
 
 (add-hook 'after-make-frame-functions #'my/translate-keys)
 (my/translate-keys)
@@ -178,7 +195,7 @@ Start directly into a clean ~*scratch*~ buffer set up in ~org-mode~.
 #+begin_src emacs-lisp
 (setq inhibit-startup-screen t
       initial-scratch-message nil
-      initial-major-mode 'org-mode)
+      initial-major-mode 'emacs-lisp-mode)
 #+end_src
 
 ** Indentation & Tabs
@@ -263,11 +280,15 @@ Enables relative or absolute line numbers exclusively in programming buffers (~p
 Highlight the all visible occurrances of the identifier under the cursor.
 
 #+begin_src emacs-lisp
-(use-package idle-highlight-mode
+;; (use-package idle-highlight-mode
+;;   :ensure t
+;;   :hook prog-mode
+;;   :config
+;;   (setq idle-highlight-idle-time 0.02))
+
+(use-package rainbow-identifiers
   :ensure t
-  :hook prog-mode
-  :config
-  (setq idle-highlight-idle-time 0.02))
+  :hook prog-mode)
 #+end_src
 
 ** Prettify Symbols (~prettify-symbols~)
@@ -315,6 +336,7 @@ Shows common identifiers as symbols, so that code is more concise.
   (setq prettify-symbols-alist
 	    '(("lambda"             . ?λ)
 	      ("define"             . ?𝒹)
+          ("define/f"           . ?󰊕)
           ("define-syntax-rule" . ?󰡷)
 	      ("cond"               . ?󰘬)
 	      ("!="                 . ?≠)
@@ -585,10 +607,12 @@ Colorizes matching parentheses, brackets, and braces according to their depth.
   :config (progn
 	    (keymap-unset mc/keymap "C-v")
 	    (keymap-unset mc/keymap "<return>")
+        
 	    (global-set-key (kbd "C-M-<up>") #'mc/mark-previous-like-this)
 	    (global-set-key (kbd "C-M-<down>") #'mc/mark-next-like-this)
-	    (global-set-key (kbd "C-M-i") #'mc/mark-previous-like-this)
-	    (global-set-key (kbd "C-M-k") #'mc/mark-next-like-this)))
+        
+	    (global-set-key (kbd "C-M-k") #'mc/mark-previous-like-this)
+	    (global-set-key (kbd "C-M-j") #'mc/mark-next-like-this)))
 #+end_src
 
 * Programming Environments
@@ -850,31 +874,72 @@ Custom mode for jupyter-notebook-like window navigation.
   (unless (my/kill-whitespace-backward)
 	(sp-backward-kill-sexp)))
 
-(defun my/lisp-editing-keybinds (keymap)
-  ;; C-M-[key] (Ctrl + Alt + [key])
-  (define-key keymap (kbd "M-<left>") #'my/backward-transpose-sexp)
-  (define-key keymap (kbd "M-<right>") #'sp-transpose-sexp)
-  (define-key keymap (kbd "M-<up>") #'my/backward-transpose-sexp)
-  (define-key keymap (kbd "M-<down>") #'sp-transpose-sexp)
+(defun my/next-symbol-at-point (&optional backward)
+  "Jump to the next occurrence of the symbol at point.
+With prefix arg, search BACKWARD. Does not wrap."
+  (interactive "P")
+  (let ((bounds (bounds-of-thing-at-point 'symbol)))
+    (unless bounds (user-error "No symbol at point"))
+    (let* ((sym (buffer-substring-no-properties (car bounds) (cdr bounds)))
+           (regexp (concat "\\_<" (regexp-quote sym) "\\_>"))
+           (case-fold-search nil)
+           (offset (- (point) (car bounds)))
+           (origin (point))
+           (search (if backward #'re-search-backward #'re-search-forward)))
+      (goto-char (if backward (car bounds) (cdr bounds)))
+      (if (funcall search regexp nil t)
+          (progn
+            (goto-char (+ (match-beginning 0) offset))
+            (pulse-momentary-highlight-region (match-beginning 0) (match-end 0)))
+        (goto-char origin)
+        (message "No %s occurrence of `%s'"
+                 (if backward "previous" "next") sym)))))
 
-  ;; C-[Arrows]
-  (define-key keymap (kbd "C-<left>")  #'backward-sexp)
-  (define-key keymap (kbd "C-<right>") #'forward-sexp)
-  (define-key keymap (kbd "C-<up>")    #'backward-sexp)
-  (define-key keymap (kbd "C-<down>")  #'forward-sexp)
-  
-  ;;; ast-actions
-  (define-key keymap (kbd "H-[") #'sp-backward-slurp-sexp)
-  (define-key keymap (kbd "C-]") #'sp-backward-barf-sexp)
-  (define-key keymap (kbd "M-[") #'sp-forward-barf-sexp)
-  (define-key keymap (kbd "M-]") #'sp-forward-slurp-sexp)
-  (define-key keymap (kbd "C-r") #'raise-sexp)
-  (define-key keymap (kbd "C-(") #'sp-backward-unwrap-sexp)
-  (define-key keymap (kbd "C-)") #'sp-unwrap-sexp)
-  (define-key keymap (kbd "C-<delete>") #'my/kill-whitespace-or-sexp)
-  (define-key keymap (kbd "C-<backspace>") #'my/kill-whitespace-or-sexp-backward))
+(defun my/prev-symbol-at-point ()
+  "Jump to the previous occurrence of the symbol at point."
+  (interactive)
+  (my/next-symbol-at-point t))
+
+(global-set-key (kbd "M-n") #'my/next-symbol-at-point)
+(global-set-key (kbd "M-p") #'my/prev-symbol-at-point)
+
+(defun my/lisp-editing-keybinds (keymap)
+  (cl-flet ((setk (ks f)
+              (if (listp ks)
+                  (cl-dolist (k ks) (define-key keymap (kbd k) f))
+                  (define-key keymap (kbd ks) f))))
+    ;; raw movement
+    (setk '("C-j" "C-<left>")  #'backward-sexp)
+    (setk '("C-l" "C-<right>") #'forward-sexp)
+    (setk '("s-i" "C-<up>")    #'backward-sexp)
+    (setk '("C-k" "C-<down>")  #'forward-sexp)
+
+    ;; move to eq symbol
+    (setk '("C-M-j" "C-M-<left>")  #'my/prev-symbol-at-point)
+    (setk '("C-M-l" "C-M-<right>") #'my/next-symbol-at-point)
+    
+    ;; transposition
+    (setk "M-<left>"  #'my/backward-transpose-sexp)
+    (setk "M-<right>" #'sp-transpose-sexp)
+    (setk "M-<up>"    #'my/backward-transpose-sexp)
+    (setk "M-<down>"  #'sp-transpose-sexp)
+    
+    ;; ast-actions
+    (setk "H-["           #'sp-backward-slurp-sexp)
+    (setk "C-]"           #'sp-backward-barf-sexp)
+    (setk "M-["           #'sp-forward-barf-sexp)
+    (setk "M-]"           #'sp-forward-slurp-sexp)
+    (setk "C-r"           #'raise-sexp)
+    (setk "C-("           #'sp-backward-unwrap-sexp)
+    (setk "C-)"           #'sp-unwrap-sexp)
+    (setk "C-<delete>"    #'my/kill-whitespace-or-sexp)
+    (setk "C-<backspace>" #'my/kill-whitespace-or-sexp-backward)
+    ))
 
 (my/lisp-editing-keybinds lisp-mode-shared-map)
+
+(load "~/.emacs.d/minor-modes/structural-insert.el")
+(load "~/.emacs.d/minor-modes/structural-editing.el")
 #+end_src
 
 ** Emacs Lisp

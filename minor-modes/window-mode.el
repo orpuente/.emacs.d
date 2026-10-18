@@ -174,7 +174,7 @@ Window Mode
 
 (defvar window-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "<escape>") #'window-mode-hydra/body)
+    (define-key map (kbd "C-<escape>") #'window-mode-hydra/body)
     map)
   "Keymap for `window-mode'.")
 
