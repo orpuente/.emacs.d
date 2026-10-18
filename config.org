@@ -43,6 +43,8 @@
   - [[#clsl][CLSL]]
   - [[#scheme-geiser][Scheme (~geiser~)]]
   - [[#racket-racket-mode][Racket (~racket-mode~)]]
+  - [[#janet-janet-mode][Janet (~janet-mode~)]]
+  - [[#lua][Lua]]
 - [[#org-mode][Org Mode]]
   - [[#core-org-settings--babel-execution-org][Core Org Settings & Babel Execution (~org~)]]
   - [[#org-babel-racket-integration-ob-racket][Org Babel Racket Integration (~ob-racket~)]]
@@ -649,6 +651,27 @@ Common LISP Shading Language.
   :config
   (my/lisp-editing-keybinds racket-repl-mode-map)
   (my/lisp-editing-keybinds racket-mode-map))
+#+end_src
+
+** Janet (~janet-mode~)
+
+#+begin_src emacs-lisp
+(use-package janet-mode
+  :ensure t
+  :config
+  (my/lisp-editing-keybinds janet-mode-map))
+#+end_src
+
+** Lua
+
+#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-ts-mode))
+
+(with-eval-after-load 'treesit
+  (add-to-list 'treesit-language-source-alist
+               '(lua "https://github.com/tree-sitter-grammars/tree-sitter-lua")))
+
+;; Then do `M-x' `treesit-install-language-grammar'
 #+end_src
 
 * Org Mode
