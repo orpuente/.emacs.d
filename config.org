@@ -5,6 +5,7 @@
 
 * Table of Contents :TOC:
 - [[#system--performance][System & Performance]]
+  - [[#enable-lexical-bindings][Enable lexical bindings]]
   - [[#load-elisp-cl-language-extension][Load ELisp CL language extension]]
   - [[#directory-cleanup-no-littering][Directory Cleanup (~no-littering~)]]
 - [[#system-settings--native-options-emacs-native][System Settings & Native Options (~emacs-native~)]]
@@ -60,6 +61,11 @@
 * System & Performance
 Core system optimizations, garbage collection tweaks, and runtime file hygiene settings 
 designed to keep Emacs fast, responsive, and uncluttered.
+
+** Enable lexical bindings
+#+begin_src emacs-lisp
+;; -*- lexical-binding: t; -*-
+#+end_src
 
 ** Load ELisp CL language extension
 
