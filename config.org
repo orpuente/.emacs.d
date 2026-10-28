@@ -21,6 +21,7 @@
   - [[#color-themes-ef-themes][Color Themes (~ef-themes~)]]
   - [[#modeline-doom-modeline][Modeline (~doom-modeline~)]]
   - [[#line-numbers-display-line-numbers][Line Numbers (~display-line-numbers~)]]
+  - [[#highlight-comments][Highlight comments]]
   - [[#highlight-symbol-at-cursor-idle-highlight][Highlight symbol at cursor (~idle-highlight~)]]
   - [[#prettify-symbols-prettify-symbols][Prettify Symbols (~prettify-symbols~)]]
   - [[#cursor][Cursor]]
@@ -274,6 +275,16 @@ Enables relative or absolute line numbers exclusively in programming buffers (~p
 #+begin_src emacs-lisp
 (use-package display-line-numbers
   :hook (prog-mode . display-line-numbers-mode))
+#+end_src
+
+** Highlight comments
+Make comments more visible, they are important!
+#+begin_src emacs-lisp
+(set-face-attribute 'font-lock-comment-face nil
+                    :foreground "#FFDD00")
+
+(set-face-attribute 'font-lock-comment-delimiter-face nil
+                    :foreground "#FFDD00")
 #+end_src
 
 ** Highlight symbol at cursor (~idle-highlight~)
