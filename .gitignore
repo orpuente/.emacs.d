@@ -3,10 +3,19 @@
 
 # Explicitly allow specific files
 !.gitignore
-!init.el
 !config.org
-!config-utils/**
-!fonts/**
-!minor-modes/**
-!ob-racket/**
+!init.el
 !README.org
+
+!config-utils/
+!config-utils/utils.el
+
+!fonts/
+!fonts/**
+
+!minor-modes/
+!minor-modes/structural-editing.el
+!minor-modes/structural-insert.el
+
+!ob-racket/
+!ob-racket/ob-racket.el
