@@ -21,26 +21,52 @@
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-;; Uncomment to profile `init.el'.
-;; (setq use-package-compute-statistics t)
-
-;; Uncomment to debug use-package loads.
-;; (setq use-package-verbose t)
-
 ;; Uncomment if MELPA Stable is desired:
 ;; (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
-;; Default behavior for use-package
-(setq use-package-always-defer t)
+;; ---------------------------------------------------------------------------
+;; 4. Recompile Files
+;; ---------------------------------------------------------------------------
+;; Byte-compile local Lisp whenever the source is newer than its .elc (or the
+;; .elc is missing). If a compile fails, no .elc is written, and
+;; `load-prefer-newer' makes Emacs load the newer .el source instead of a
+;; stale .elc.
+(setq load-prefer-newer t)
+
+(require 'bytecomp)
+(defun my/recompile-if-needed (file)
+  "Byte-compile FILE (relative to `user-emacs-directory') if its .elc is stale."
+  (byte-recompile-file (expand-file-name file user-emacs-directory) nil 0))
+
+;; config.org -> config.el (tangle only when config.org changed)
+(let ((org-file (expand-file-name "config.org" user-emacs-directory))
+      (el-file  (expand-file-name "config.el"  user-emacs-directory)))
+  (when (file-newer-than-file-p org-file el-file)
+    (require 'org)
+    (org-babel-tangle-file org-file el-file
+                           (rx string-start (or "emacs-lisp" "elisp") string-end))
+    ;; Mark config.el as up to date. This is needed for the case in which,
+    ;; we edit non-source blocks in the .org file, in which case the file
+    ;; would not be re-tangled, but the .org would be newer, and therefore
+    ;; the load function would prefer the .el (source) file.
+    (set-file-times el-file)))
+
+;; Compile minor modes before config.el, because config.el loads them.
+(mapc #'my/recompile-if-needed
+      '("ob-racket/ob-racket.el"
+        "minor-modes/window-mode.el"
+        "minor-modes/structural-insert.el"
+        "minor-modes/structural-editing.el"
+        "config.el"))
 
 ;; ---------------------------------------------------------------------------
-;; 4. Load Literate Configuration (config.org)
+;; 5. Load Literate Configuration (config.org)
 ;; ---------------------------------------------------------------------------
-(require 'org)
-(org-babel-load-file (expand-file-name "config.org" user-emacs-directory))
+(require 'use-package)                  ; compiled config calls into use-package/bind-key
+(load (expand-file-name "config" user-emacs-directory) nil 'nomessage)
 
 ;; ---------------------------------------------------------------------------
-;; 5. Restore Garbage Collector & Report Startup Time
+;; 6. Restore Garbage Collector & Report Startup Time
 ;; ---------------------------------------------------------------------------
 (add-hook 'emacs-startup-hook
           (lambda ()

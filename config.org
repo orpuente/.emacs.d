@@ -5,6 +5,7 @@
 
 * Table of Contents :TOC:
 - [[#system--performance][System & Performance]]
+  - [[#use-package-configuration][~use-package~ configuration]]
   - [[#enable-lexical-bindings][Enable lexical bindings]]
   - [[#load-elisp-cl-language-extension][Load ELisp CL language extension]]
   - [[#directory-cleanup-no-littering][Directory Cleanup (~no-littering~)]]
@@ -40,6 +41,7 @@
   - [[#rainbow-delimiters-rainbow-delimiters][Rainbow Delimiters (~rainbow-delimiters~)]]
   - [[#multiple-cursors-multiple-cursors][Multiple Cursors (~multiple-cursors~)]]
 - [[#programming-environments][Programming Environments]]
+  - [[#lisp-helpers][Lisp Helpers]]
   - [[#common-lisp-sly][Common Lisp (~sly~)]]
   - [[#cl3][CL3]]
   - [[#clsl][CLSL]]
@@ -47,6 +49,7 @@
   - [[#racket-racket-mode][Racket (~racket-mode~)]]
   - [[#janet-janet-mode][Janet (~janet-mode~)]]
   - [[#lua][Lua]]
+  - [[#python][Python]]
 - [[#org-mode][Org Mode]]
   - [[#core-org-settings--babel-execution-org][Core Org Settings & Babel Execution (~org~)]]
   - [[#org-babel-racket-integration-ob-racket][Org Babel Racket Integration (~ob-racket~)]]
@@ -65,6 +68,21 @@
 * System & Performance
 Core system optimizations, garbage collection tweaks, and runtime file hygiene settings 
 designed to keep Emacs fast, responsive, and uncluttered.
+
+** ~use-package~ configuration
+
+#+begin_src emacs-lisp
+(require 'use-package)
+(eval-and-compile
+  ;; Uncomment to profile `init.el'.
+  (setq use-package-compute-statistics t)
+
+  ;; Uncomment to debug use-package loads.
+  ;; (setq use-package-verbose t)
+
+  ;; Defer loading packages until they are needed.
+  (setq use-package-always-defer t))
+#+end_src
 
 ** Enable lexical bindings
 #+begin_src emacs-lisp
@@ -285,6 +303,11 @@ Make comments more visible, they are important!
 
 (set-face-attribute 'font-lock-comment-delimiter-face nil
                     :foreground "#FFDD00")
+
+(set-face-attribute 'font-lock-doc-face nil
+                    :inherit 'font-lock-comment-face
+                    :foreground 'unspecified
+                    :slant 'unspecified)
 #+end_src
 
 ** Highlight symbol at cursor (~idle-highlight~)
@@ -614,19 +637,109 @@ Colorizes matching parentheses, brackets, and braces according to their depth.
 #+begin_src emacs-lisp
 (use-package multiple-cursors
   :ensure t
-  :demand t
-  :config (progn
-	    (keymap-unset mc/keymap "C-v")
-	    (keymap-unset mc/keymap "<return>")
-        
-	    (global-set-key (kbd "C-M-<up>") #'mc/mark-previous-like-this)
-	    (global-set-key (kbd "C-M-<down>") #'mc/mark-next-like-this)
-        
-	    (global-set-key (kbd "C-M-k") #'mc/mark-previous-like-this)
-	    (global-set-key (kbd "C-M-j") #'mc/mark-next-like-this)))
+  :bind (("C-M-<up>"   . mc/mark-previous-like-this)
+         ("C-M-<down>" . mc/mark-next-like-this)
+         ("C-M-k"      . mc/mark-previous-like-this)
+         ("C-M-j"      . mc/mark-next-like-this))
+  :config
+  (keymap-unset mc/keymap "C-v")
+  (keymap-unset mc/keymap "<return>"))
 #+end_src
 
 * Programming Environments
+
+
+** Lisp Helpers
+
+#+begin_src emacs-lisp
+(defun my/backward-transpose-sexp ()
+  (interactive)
+  (sp-transpose-sexp -1))
+
+(defun my/kill-whitespace ()
+  (interactive)
+  (let ((start (point)))
+	(skip-chars-forward " \t\n\r\f")
+	(when (> (point) start)
+	  (delete-region start (point))
+	  t)))
+
+(defun my/kill-whitespace-backward ()
+  (interactive)
+  (let ((start (point)))
+	(skip-chars-backward " \t\n\r\f")
+	(when (< (point) start)
+	  (delete-region (point) start)
+	  t)))
+
+(defun my/kill-whitespace-or-sexp ()
+  (interactive)
+  (unless (my/kill-whitespace)
+	(sp-kill-sexp)))
+
+(defun my/kill-whitespace-or-sexp-backward ()
+  (interactive)
+  (unless (my/kill-whitespace-backward)
+	(sp-backward-kill-sexp)))
+
+(defun my/next-symbol-at-point (&optional backward)
+  "Jump to the next occurrence of the symbol at point.
+With prefix arg, search BACKWARD. Does not wrap."
+  (interactive "P")
+  (let ((bounds (bounds-of-thing-at-point 'symbol)))
+    (unless bounds (user-error "No symbol at point"))
+    (let* ((sym (buffer-substring-no-properties (car bounds) (cdr bounds)))
+           (regexp (concat "\\_<" (regexp-quote sym) "\\_>"))
+           (case-fold-search nil)
+           (offset (- (point) (car bounds)))
+           (origin (point))
+           (search (if backward #'re-search-backward #'re-search-forward)))
+      (goto-char (if backward (car bounds) (cdr bounds)))
+      (if (funcall search regexp nil t)
+          (progn
+            (goto-char (+ (match-beginning 0) offset))
+            (pulse-momentary-highlight-region (match-beginning 0) (match-end 0)))
+        (goto-char origin)
+        (message "No %s occurrence of `%s'"
+                 (if backward "previous" "next") sym)))))
+
+(defun my/prev-symbol-at-point ()
+  "Jump to the previous occurrence of the symbol at point."
+  (interactive)
+  (my/next-symbol-at-point t))
+
+(defun my/lisp-editing-keybinds (keymap)
+  (cl-flet ((setk (ks f)
+              (if (listp ks)
+                  (cl-dolist (k ks) (define-key keymap (kbd k) f))
+                  (define-key keymap (kbd ks) f))))
+    ;; raw movement
+    (setk '("C-j" "C-<left>")  #'backward-sexp)
+    (setk '("C-l" "C-<right>") #'forward-sexp)
+    (setk '("s-i" "C-<up>")    #'backward-sexp)
+    (setk '("C-k" "C-<down>")  #'forward-sexp)
+
+    ;; move to eq symbol
+    (setk '("C-M-j" "C-M-<left>")  #'my/prev-symbol-at-point)
+    (setk '("C-M-l" "C-M-<right>") #'my/next-symbol-at-point)
+    
+    ;; transposition
+    (setk "M-<left>"  #'my/backward-transpose-sexp)
+    (setk "M-<right>" #'sp-transpose-sexp)
+    (setk "M-<up>"    #'my/backward-transpose-sexp)
+    (setk "M-<down>"  #'sp-transpose-sexp)
+    
+    ;; ast-actions
+    (setk "H-["           #'sp-backward-slurp-sexp)
+    (setk "C-]"           #'sp-backward-barf-sexp)
+    (setk "M-["           #'sp-forward-barf-sexp)
+    (setk "M-]"           #'sp-forward-slurp-sexp)
+    (setk "C-r"           #'raise-sexp)
+    (setk "C-("           #'sp-backward-unwrap-sexp)
+    (setk "C-)"           #'sp-unwrap-sexp)
+    (setk "C-<delete>"    #'my/kill-whitespace-or-sexp)
+    (setk "C-<backspace>" #'my/kill-whitespace-or-sexp-backward)))
+#+end_src
 
 ** Common Lisp (~sly~)
 
@@ -718,6 +831,18 @@ Common LISP Shading Language.
 ;; Then do `M-x' `treesit-install-language-grammar'
 #+end_src
 
+** Python
+
+#+begin_src emacs-lisp
+(use-package eglot
+  :ensure nil
+  :hook ((python-mode . eglot-ensure)
+         (python-ts-mode . eglot-ensure))
+  :config
+  (add-to-list 'eglot-server-programs
+               '((python-mode python-ts-mode) . ("pyright-langserver" "--stdio"))))
+#+end_src
+
 * Org Mode
 Comprehensive configuration for document authoring, Babel code block execution across languages 
 (Python, Racket, Graphviz), and modern visual styling for headlines and markup.
@@ -756,8 +881,7 @@ Enables execution of Racket and Scribble source code blocks within Org documents
 
 #+begin_src emacs-lisp
 (use-package ob-racket
-  :after org
-  :pin manual)
+  :after org)
 #+end_src
 
 ** Modern UI Styling (~org-modern~)
@@ -845,8 +969,9 @@ Custom mode for jupyter-notebook-like window navigation.
 (use-package hydra
   :ensure t)
 
-(load "~/.emacs.d/minor-modes/window-mode.el")
 (use-package window-mode
+  :load-path "minor-modes"
+  :demand t
   :config (window-mode 1))
 
 (global-set-key (kbd "C-0") #'other-window)
@@ -855,102 +980,17 @@ Custom mode for jupyter-notebook-like window navigation.
 ** Lisp Shared
 
 #+begin_src emacs-lisp
-(defun my/backward-transpose-sexp ()
-  (interactive)
-  (sp-transpose-sexp -1))
-
-(defun my/kill-whitespace ()
-  (interactive)
-  (let ((start (point)))
-	(skip-chars-forward " \t\n\r\f")
-	(when (> (point) start)
-	  (delete-region start (point))
-	  t)))
-
-(defun my/kill-whitespace-backward ()
-  (interactive)
-  (let ((start (point)))
-	(skip-chars-backward " \t\n\r\f")
-	(when (< (point) start)
-	  (delete-region (point) start)
-	  t)))
-
-(defun my/kill-whitespace-or-sexp ()
-  (interactive)
-  (unless (my/kill-whitespace)
-	(sp-kill-sexp)))
-
-(defun my/kill-whitespace-or-sexp-backward ()
-  (interactive)
-  (unless (my/kill-whitespace-backward)
-	(sp-backward-kill-sexp)))
-
-(defun my/next-symbol-at-point (&optional backward)
-  "Jump to the next occurrence of the symbol at point.
-With prefix arg, search BACKWARD. Does not wrap."
-  (interactive "P")
-  (let ((bounds (bounds-of-thing-at-point 'symbol)))
-    (unless bounds (user-error "No symbol at point"))
-    (let* ((sym (buffer-substring-no-properties (car bounds) (cdr bounds)))
-           (regexp (concat "\\_<" (regexp-quote sym) "\\_>"))
-           (case-fold-search nil)
-           (offset (- (point) (car bounds)))
-           (origin (point))
-           (search (if backward #'re-search-backward #'re-search-forward)))
-      (goto-char (if backward (car bounds) (cdr bounds)))
-      (if (funcall search regexp nil t)
-          (progn
-            (goto-char (+ (match-beginning 0) offset))
-            (pulse-momentary-highlight-region (match-beginning 0) (match-end 0)))
-        (goto-char origin)
-        (message "No %s occurrence of `%s'"
-                 (if backward "previous" "next") sym)))))
-
-(defun my/prev-symbol-at-point ()
-  "Jump to the previous occurrence of the symbol at point."
-  (interactive)
-  (my/next-symbol-at-point t))
-
 (global-set-key (kbd "M-n") #'my/next-symbol-at-point)
 (global-set-key (kbd "M-p") #'my/prev-symbol-at-point)
-
-(defun my/lisp-editing-keybinds (keymap)
-  (cl-flet ((setk (ks f)
-              (if (listp ks)
-                  (cl-dolist (k ks) (define-key keymap (kbd k) f))
-                  (define-key keymap (kbd ks) f))))
-    ;; raw movement
-    (setk '("C-j" "C-<left>")  #'backward-sexp)
-    (setk '("C-l" "C-<right>") #'forward-sexp)
-    (setk '("s-i" "C-<up>")    #'backward-sexp)
-    (setk '("C-k" "C-<down>")  #'forward-sexp)
-
-    ;; move to eq symbol
-    (setk '("C-M-j" "C-M-<left>")  #'my/prev-symbol-at-point)
-    (setk '("C-M-l" "C-M-<right>") #'my/next-symbol-at-point)
-    
-    ;; transposition
-    (setk "M-<left>"  #'my/backward-transpose-sexp)
-    (setk "M-<right>" #'sp-transpose-sexp)
-    (setk "M-<up>"    #'my/backward-transpose-sexp)
-    (setk "M-<down>"  #'sp-transpose-sexp)
-    
-    ;; ast-actions
-    (setk "H-["           #'sp-backward-slurp-sexp)
-    (setk "C-]"           #'sp-backward-barf-sexp)
-    (setk "M-["           #'sp-forward-barf-sexp)
-    (setk "M-]"           #'sp-forward-slurp-sexp)
-    (setk "C-r"           #'raise-sexp)
-    (setk "C-("           #'sp-backward-unwrap-sexp)
-    (setk "C-)"           #'sp-unwrap-sexp)
-    (setk "C-<delete>"    #'my/kill-whitespace-or-sexp)
-    (setk "C-<backspace>" #'my/kill-whitespace-or-sexp-backward)
-    ))
-
 (my/lisp-editing-keybinds lisp-mode-shared-map)
 
-(load "~/.emacs.d/minor-modes/structural-insert.el")
-(load "~/.emacs.d/minor-modes/structural-editing.el")
+(use-package structural-insert
+  :load-path "minor-modes"
+  :demand t
+  :config (window-mode 1))
+
+(load "~/.emacs.d/minor-modes/structural-insert")
+(load "~/.emacs.d/minor-modes/structural-editing")
 #+end_src
 
 ** Emacs Lisp
