@@ -155,11 +155,18 @@ Translate ~C-i~ and ~C-[~ to super combinations (~s-i~ / ~s-[~) across newly cre
   ;; (define-key input-decode-map [?\C-\[] [C-lbracket])
   ;; (define-key input-decode-map [?\S-\C-\[] [C-S-lbracket])
   ;; (define-key input-decode-map [?\C-\M-\[] [C-M-lbracket])
-  
-  (keyboard-translate ?\C-i ?\s-i)
-  (keyboard-translate ?\C-m ?\s-m)
-  (keyboard-translate ?\C-\[ ?\s-\[)
-  )
+
+  ;; This only makes sense on graphical frames. A terminal sends TAB, RET and ESC
+  ;; as the same bytes as C-i, C-m and C-[, so translating them there breaks those keys
+  ;; and turns the terminal's replies to xterm.el's startup queries
+  ;; (ESC [ > ... c, ESC P > | ...) into text inserted into *scratch*.
+  ;; `keyboard-translate-table' is per-terminal, so set it with FRAME selected.
+  (let ((frame (or frame (selected-frame))))
+    (when (display-graphic-p frame)
+      (with-selected-frame frame
+        (keyboard-translate ?\C-i ?\s-i)
+        (keyboard-translate ?\C-m ?\s-m)
+        (keyboard-translate ?\C-\[ ?\s-\[)))))
 
 (add-hook 'after-make-frame-functions #'my/translate-keys)
 (my/translate-keys)
