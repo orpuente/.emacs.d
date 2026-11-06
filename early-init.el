@@ -55,3 +55,34 @@
 ;; upgrade and delete; run `M-x package-quickstart-refresh' if you change
 ;; elpa/ by hand.
 (setq package-quickstart t)
+
+;; ---------------------------------------------------------------------------
+;; 5. Native-comp trampolines without loading the compiler
+;; ---------------------------------------------------------------------------
+;; Advising a C primitive (doom-modeline advises `rename-buffer') makes
+;; Emacs look for a cached native-comp trampoline .eln. Computing its
+;; name calls `comp-c-func-name', which lives in comp.el, so the first
+;; such advice loads the whole native compiler (~30 ms) even when the
+;; .eln already exists. Compute the name here instead (Emacs 30+).
+;; If the computed file isn't found -- because it isn't cached yet, or
+;; because this formula has drifted from upstream -- or comp.el is
+;; already loaded, defer to the original, so behavior stays correct.
+(defun my/trampoline-filename (subr)
+  "Return SUBR's trampoline file name, like `comp-trampoline-filename'."
+  (let* ((name (symbol-name subr))
+         (hex (mapconcat (lambda (c) (substring (format "%x" c) 0 2)) name))
+         (readable (replace-regexp-in-string
+                    (rx (not (any "0-9a-z_"))) ""
+                    (string-replace "-" "_" name))))
+    (format "subr--trampoline-%s_%s_0.eln" hex readable)))
+
+(defun my/fast-trampoline-filename (orig-fun subr)
+  "Return SUBR's trampoline file name without loading comp.el if possible.
+Around advice for `comp-trampoline-filename'; ORIG-FUN is the original."
+  (or (and (not (featurep 'comp))
+           (let ((file (my/trampoline-filename subr)))
+             (and (locate-file file (comp-eln-load-path-eff))
+                  file)))
+      (funcall orig-fun subr)))
+
+(advice-add 'comp-trampoline-filename :around #'my/fast-trampoline-filename)
