@@ -3,8 +3,7 @@
 ;; ---------------------------------------------------------------------------
 ;; 1. Startup Optimization (Garbage Collector)
 ;; ---------------------------------------------------------------------------
-;; Temporarily raise the GC threshold to 256 MB to speed up initial loading
-(setq gc-cons-threshold (* 256 1024 1024))
+;; GC is disabled for startup in early-init.el and restored in section 6.
 
 ;; ---------------------------------------------------------------------------
 ;; 2. Custom Variables Isolation
@@ -18,8 +17,11 @@
 ;; ---------------------------------------------------------------------------
 ;; 3. Package Repositories & Defaults
 ;; ---------------------------------------------------------------------------
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; Don't `require' package.el at startup: packages are already activated
+;; (via package-quickstart, see early-init.el) and loading package.el costs
+;; ~30-45 ms. Configure it whenever something does load it.
+(with-eval-after-load 'package
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
 
 ;; Uncomment if MELPA Stable is desired:
 ;; (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
@@ -70,6 +72,7 @@
 ;; ---------------------------------------------------------------------------
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq gc-cons-threshold (* 32 1024 1024))
+            (setq gc-cons-threshold (* 32 1024 1024)
+                  gc-cons-percentage 0.1)
             (message "Emacs successfully loaded in %s" (emacs-init-time))))
 (put 'narrow-to-region 'disabled nil)

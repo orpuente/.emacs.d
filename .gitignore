@@ -5,6 +5,7 @@
 !.gitignore
 !config.org
 !init.el
+!early-init.el
 !README.org
 
 !config-utils/

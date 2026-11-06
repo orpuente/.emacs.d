@@ -79,8 +79,8 @@ designed to keep Emacs fast, responsive, and uncluttered.
 #+begin_src emacs-lisp
 (require 'use-package)
 (eval-and-compile
-  ;; Uncomment to profile `init.el'.
-  (setq use-package-compute-statistics t)
+  ;; Uncomment to profile `init.el' (adds overhead to every use-package form).
+  ;; (setq use-package-compute-statistics t)
 
   ;; Uncomment to debug use-package loads.
   ;; (setq use-package-verbose t)
@@ -122,10 +122,8 @@ and frame behavior adjustments to establish a clean baseline environment.
 Disable unnecessary UI elements and configure cursor and search scrolling behavior.
 
 #+begin_src emacs-lisp
-;; Hide UI elements
-(tool-bar-mode -1)
-(menu-bar-mode -1)
-(scroll-bar-mode -1)
+;; Tool bar, menu bar and scroll bars are disabled in early-init.el via
+;; `default-frame-alist', so the first frame is created without them.
 (global-display-line-numbers-mode -1)
 
 ;; Disable ring-bell.
@@ -187,10 +185,11 @@ Remove conflicting built-in global and mode-specific keybindings.
 
 ** Typography & Fonts
 Apply ~FiraCode Nerd Font~ globally for both standalone frames and ~emacsclient~ instances.
+The frame font itself is set in =early-init.el= (~default-frame-alist~) so the first
+frame is created with it.
 
 #+begin_src emacs-lisp
-(add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono 16")) ;; standalone
-(set-face-attribute 'default nil :font "FiraCode Nerd Font Mono 16")        ;; emacsclient
+(set-face-attribute 'default nil :font "FiraCode Nerd Font Mono 16")
 
 ;; Prevent Emacs from using proportional default fonts for symbols
 (setq use-default-font-for-symbols nil)
@@ -209,12 +208,14 @@ Apply ~FiraCode Nerd Font~ globally for both standalone frames and ~emacsclient~
 #+end_src
 
 ** Startup Screen & Initial Buffer
-Start directly into a clean ~*scratch*~ buffer set up in ~org-mode~.
+Start directly into a clean ~*scratch*~ buffer in ~fundamental-mode~.
+Using a ~prog-mode~ here would run every ~prog-mode-hook~ (diff-hl, company,
+smartparens, ...) during startup, costing ~70 ms. Use =M-x emacs-lisp-mode= when needed.
 
 #+begin_src emacs-lisp
 (setq inhibit-startup-screen t
       initial-scratch-message nil
-      initial-major-mode 'emacs-lisp-mode)
+      initial-major-mode 'fundamental-mode)
 #+end_src
 
 ** Indentation & Tabs
@@ -283,8 +284,9 @@ A minimalist and modern status line powered by ~all-the-icons~.
 #+begin_src emacs-lisp
 (use-package doom-modeline
   :ensure t
-  :demand t
-  :init (doom-modeline-mode 1))
+  ;; Loading doom-modeline costs ~65 ms; enable it as soon as Emacs is idle
+  ;; after startup instead of blocking the first frame.
+  :init (run-with-idle-timer 0 nil #'doom-modeline-mode 1))
 #+end_src
 
 ** Line Numbers (~display-line-numbers~)
@@ -984,13 +986,17 @@ Custom mode for jupyter-notebook-like window navigation.
 (global-set-key (kbd "M-p") #'my/prev-symbol-at-point)
 (my/lisp-editing-keybinds lisp-mode-shared-map)
 
+;; structural-editing requires smartparens, so load both modes only once
+;; smartparens itself is loaded (first prog-mode buffer) instead of at startup.
+(use-package structural-editing
+  :load-path "minor-modes"
+  :after smartparens
+  :demand t)
+
 (use-package structural-insert
   :load-path "minor-modes"
-  :demand t
-  :config (window-mode 1))
-
-(load "~/.emacs.d/minor-modes/structural-insert")
-(load "~/.emacs.d/minor-modes/structural-editing")
+  :after structural-editing
+  :demand t)
 #+end_src
 
 ** Emacs Lisp
