@@ -3,8 +3,8 @@
 ;; ---------------------------------------------------------------------------
 ;; 1. Startup Optimization (Garbage Collector)
 ;; ---------------------------------------------------------------------------
-;; Temporarily raise the GC threshold to 50MB to speed up initial loading
-(setq gc-cons-threshold (* 50 1024 1024))
+;; Temporarily raise the GC threshold to 256 MB to speed up initial loading
+(setq gc-cons-threshold (* 256 1024 1024))
 
 ;; ---------------------------------------------------------------------------
 ;; 2. Custom Variables Isolation
@@ -70,6 +70,6 @@
 ;; ---------------------------------------------------------------------------
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq gc-cons-threshold (* 2 1024 1024))
+            (setq gc-cons-threshold (* 32 1024 1024))
             (message "Emacs successfully loaded in %s" (emacs-init-time))))
 (put 'narrow-to-region 'disabled nil)
