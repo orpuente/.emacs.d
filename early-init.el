@@ -40,12 +40,23 @@
                 (vertical-scroll-bars . nil)
                 (horizontal-scroll-bars . nil))
               default-frame-alist))
+
 ;; Keep the mode variables consistent with the frame parameters above.
 (setq menu-bar-mode nil
       tool-bar-mode nil
       scroll-bar-mode nil)
+
 ;; Don't resize the frame when the font or UI elements change.
 (setq frame-inhibit-implied-resize t)
+
+;; Don't connect to an X input method (XIM): saves ~14 ms at startup and
+;; ~4 ms per frame. Emacs's own input methods (C-\) and dead keys still
+;; work; system IMs (ibus/fcitx) and X Compose-key sequences won't. The X
+;; connection opens after this file runs, so the resource still applies.
+(setq x-command-line-resources
+      (if x-command-line-resources
+          (concat x-command-line-resources "\nEmacs.useXIM: false")
+        "Emacs.useXIM: false"))
 
 ;; ---------------------------------------------------------------------------
 ;; 4. Package quickstart
