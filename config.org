@@ -808,10 +808,30 @@ Common LISP Shading Language.
 ** Scheme (~geiser~)
 
 #+begin_src emacs-lisp
+(use-package geiser-chez
+  :ensure t
+  :custom
+  (geiser-chez-binary "scheme"))
+
+(use-package geiser-mit
+  :ensure t
+  :custom
+  (geiser-mit-binary "mit-scheme"))
+
+(use-package geiser-racket
+  :ensure t)
+
 (use-package geiser
   :ensure t
-;;  :hook ((scheme-mode-hook . geiser-mode))
-  :config (setq geiser-mode-start-repl-p t))
+  :config (setq geiser-mode-start-repl-p t)
+  :custom
+  (geiser-active-implementations '(chez mit racket))
+  (geiser-default-implementation nil)
+  (geiser-implementations-alist
+   '(((regexp "\\.ss\\'")  chez)
+     ((regexp "\\.sls\\'") chez)
+     ((regexp "\\.scm\\'") mit)
+     ((regexp "\\.rkt\\'") racket))))
 #+end_src
 
 ** Racket (~racket-mode~)
