@@ -17,6 +17,7 @@
 !minor-modes/
 !minor-modes/structural-editing.el
 !minor-modes/structural-insert.el
+!minor-modes/sly-live-examples.el
 
 !ob-racket/
 !ob-racket/ob-racket.el

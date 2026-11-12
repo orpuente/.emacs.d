@@ -768,6 +768,11 @@ Add Sly, a modern slime replacement.
 (use-package sly
   :ensure t
   :hook ((sly-mrepl-mode-hook . enable-ansi-colors-in-sly-mrepl)))
+
+(use-package sly-live-examples
+  :load-path "minor-modes"
+  :after sly
+  :demand t)
 #+end_src
 
 ** CL3
